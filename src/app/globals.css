@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #171a22;
+  --foreground: #f8fafc;
+  --card-bg: #212632;
+  --card-border: #333c4e;
+  --brand-orange: #f2751b;
+  --brand-amber: #f59e0b;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  background-image: 
+    radial-gradient(circle at 50% -10%, rgba(242, 117, 27, 0.14) 0%, transparent 60%),
+    radial-gradient(circle at 90% 15%, rgba(245, 158, 11, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 10% 45%, rgba(242, 117, 27, 0.10) 0%, transparent 50%),
+    radial-gradient(circle at 80% 85%, rgba(245, 158, 11, 0.09) 0%, transparent 45%),
+    radial-gradient(circle at 30% 95%, rgba(242, 117, 27, 0.08) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Custom modern scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #171a22;
+}
+::-webkit-scrollbar-thumb {
+  background: #374154;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f2751b;
+}
+
+/* Ambient lighting utility classes */
+.ambient-glow-amber {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(100px);
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.22) 0%, rgba(242, 117, 27, 0.12) 55%, transparent 80%);
+}
+
+.ambient-glow-orange {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(120px);
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(242, 117, 27, 0.24) 0%, rgba(245, 158, 11, 0.10) 55%, transparent 80%);
+}
+
+/* Glassmorphism utility with warm ambient touch */
+.glass-panel {
+  background: rgba(28, 32, 39, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-nav {
+  background: rgba(19, 21, 25, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+/* Luxury card with subtle warm ambient border & hover */
+.card-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #1c2027;
+  border: 1px solid #2e3543;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  border-color: rgba(242, 117, 27, 0.5);
+  box-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.55), 0 0 20px -3px rgba(242, 117, 27, 0.25);
+}
+
+/* Subtle badge pulse */
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.98); }
+}
+.pulse-badge {
+  animation: pulseSubtle 2.5s infinite ease-in-out;
+}
+
+/* Print stylesheet for QR sheets */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}

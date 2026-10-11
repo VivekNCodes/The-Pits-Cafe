@@ -1,0 +1,409 @@
+// Master Prisma Schema for Multi-Tenant Restaurant & Cafe Digital Experience Platform
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Restaurant {
+  id                      String        @id @default(cuid())
+  slug                    String        @unique
+  name                    String
+  tagline                 String?
+  description             String?
+  aboutText               String?
+  logoUrl                 String?
+  heroImageUrl            String?
+  heroHeading             String?
+  heroSubtitle            String?
+  
+  // Location & Contact
+  address                 String
+  city                    String        @default("New Delhi")
+  pincode                 String        @default("110089")
+  phone                   String
+  email                   String
+  googleMapsUrl           String?
+  
+  // Hours & Operational Controls
+  openingHours            String        @default("8:00 AM - 11:00 PM")
+  dineInEnabled           Boolean       @default(true)
+  takeawayEnabled         Boolean       @default(true)
+  reservationsEnabled     Boolean       @default(true)
+  maintenanceMode         Boolean       @default(false)
+  maintenanceNotice       String?
+  
+  // Financial Rules (Server-enforced)
+  taxPercentage           Float         @default(5.0) // 5% GST for restaurants
+  serviceChargePercentage Float         @default(0.0) // 0% default
+  
+  // Branding & Aesthetic Configuration
+  themePrimaryColor       String        @default("#F2751B") // Warm orange/amber
+  themeSecondaryColor     String        @default("#151719")
+  themeAccentColor        String        @default("#F59E0B")
+  themeMode               String        @default("dark") // dark or luxury
+  
+  // QR & Greeting Configuration
+  welcomeGreetingHeading  String        @default("Welcome to The Pit Cafe")
+  welcomeGreetingMessage  String        @default("Browse our freshly prepared menu and place your order directly from your table.")
+  qrCtaText               String        @default("View Menu & Order")
+
+  // Story & Footer Customization Fields
+  aboutHeading            String?       @default("Our Story")
+  storyImageUrl           String?       @default("/images/our-story.jpg")
+  policyTitle             String?       @default("Counter Payment Model")
+  policyText              String?       @default("All food is cooked fresh upon order confirmation. Payment is collected at the restaurant counter after dining. No online gateway required.")
+  footerCopyright         String?
+
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  // Tenant Isolated Relations
+  categories              Category[]
+  foodItems               FoodItem[]
+  addonGroups             AddonGroup[]
+  tables                  Table[]
+  qrCodes                 QRCode[]
+  tableSessions           TableSession[]
+  orders                  Order[]
+  reservations            Reservation[]
+  discounts               Discount[]
+  coupons                 Coupon[]
+  socialLinks             SocialLink[]
+  auditLogs               AuditLog[]
+
+  @@index([slug])
+}
+
+model Category {
+  id           String      @id @default(cuid())
+  restaurantId String
+  name         String
+  slug         String
+  displayOrder Int         @default(0)
+  icon         String?     // Lucide icon identifier
+  description  String?
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  foodItems    FoodItem[]
+
+  @@unique([restaurantId, slug])
+  @@index([restaurantId, isActive])
+  @@index([restaurantId, displayOrder])
+}
+
+model FoodItem {
+  id              String       @id @default(cuid())
+  restaurantId    String
+  categoryId      String
+  name            String
+  slug            String
+  description     String?
+  price           Float
+  imageUrl        String?
+  preparationTime Int          @default(15) // In minutes
+  isAvailable     Boolean      @default(true)
+  isVeg           Boolean      @default(true)
+  isSpicy         Boolean      @default(false)
+  isFeatured      Boolean      @default(false)
+  isBestseller    Boolean      @default(false)
+  ingredients     String?      // Comma-separated or text
+  allergens       String?      // e.g. "Dairy, Gluten"
+  searchTags      String?      // Aliases for fuzzy search (e.g. "panner tikka, cottage cheese")
+  displayOrder    Int          @default(0)
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  restaurant      Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category        Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems      OrderItem[]
+  addonGroups     AddonGroup[]
+
+  @@unique([restaurantId, slug])
+  @@index([restaurantId, categoryId])
+  @@index([restaurantId, isAvailable])
+  @@index([restaurantId, isFeatured])
+  @@index([restaurantId, isBestseller])
+}
+
+model AddonGroup {
+  id           String      @id @default(cuid())
+  restaurantId String
+  foodItemId   String?     // Optional: if null, it is available across relevant category/items
+  title        String      // e.g. "Extra Toppings", "Choice of Size", "Cheese Options"
+  minSelect    Int         @default(0)
+  maxSelect    Int         @default(5)
+  isRequired   Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  foodItem     FoodItem?   @relation(fields: [foodItemId], references: [id], onDelete: Cascade)
+  addons       Addon[]
+
+  @@index([restaurantId])
+  @@index([foodItemId])
+}
+
+model Addon {
+  id           String      @id @default(cuid())
+  addonGroupId String
+  name         String      // e.g. "Extra Cheese", "Peri Peri Seasoning", "Extra Patty"
+  price        Float       @default(0.0)
+  isAvailable  Boolean     @default(true)
+  displayOrder Int         @default(0)
+
+  addonGroup   AddonGroup  @relation(fields: [addonGroupId], references: [id], onDelete: Cascade)
+
+  @@index([addonGroupId])
+}
+
+model Table {
+  id           String         @id @default(cuid())
+  restaurantId String
+  tableNumber  String         // e.g. "T01", "Table 12"
+  slug         String         // e.g. "t01", "t12" (for public QR URLs)
+  capacity     Int            @default(4)
+  location     String         @default("Indoor") // "Indoor", "Outdoor / Biker Courtyard", "Balcony"
+  status       String         @default("AVAILABLE") // AVAILABLE, RESERVED, OCCUPIED, CLEANING, INACTIVE
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  qrCode       QRCode?
+  tableSessions TableSession[]
+  orders       Order[]
+  reservations Reservation[]
+
+  @@unique([restaurantId, slug])
+  @@unique([restaurantId, tableNumber])
+  @@index([restaurantId, status])
+}
+
+model QRCode {
+  id           String      @id @default(cuid())
+  restaurantId String
+  tableId      String      @unique
+  codeUrl      String      // URL path: /r/{restaurantSlug}/table/{tableSlug}
+  isActive     Boolean     @default(true)
+  scanCount    Int         @default(0)
+  generatedAt  DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table        Table       @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, isActive])
+}
+
+model TableSession {
+  id            String      @id @default(cuid())
+  restaurantId  String
+  tableId       String
+  sessionToken  String      @unique // UUID or nanoid
+  customerName  String?
+  customerPhone String?
+  status        String      @default("ACTIVE") // ACTIVE, COMPLETED, EXPIRED
+  startedAt     DateTime    @default(now())
+  endedAt       DateTime?
+
+  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table         Table       @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  orders        Order[]
+
+  @@index([restaurantId, tableId, status])
+  @@index([sessionToken])
+}
+
+model Reservation {
+  id              String      @id @default(cuid())
+  restaurantId    String
+  tableId         String
+  customerName    String
+  customerPhone   String
+  customerEmail   String?
+  guestCount      Int
+  reservationDate String      // YYYY-MM-DD
+  startTime       String      // HH:mm (e.g. "19:30")
+  endTime         String      // HH:mm (e.g. "21:00")
+  status          String      @default("PENDING") // PENDING, CONFIRMED, ARRIVED, COMPLETED, CANCELLED, NO_SHOW
+  specialRequest  String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table           Table       @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, reservationDate, status])
+  @@index([restaurantId, tableId])
+}
+
+model Order {
+  id                  String             @id @default(cuid())
+  orderNumber         String             // e.g. "#1042"
+  restaurantId        String
+  orderType           String             // "DINE_IN" | "TAKEAWAY"
+  tableId             String?
+  tableSessionId      String?
+  
+  // Customer details
+  customerName        String
+  customerPhone       String
+  customerEmail       String?
+  pickupTime          String?            // For takeaway (e.g. "20 mins", "8:30 PM")
+  
+  // Status flow: PENDING -> ACCEPTED -> PREPARING -> READY -> COMPLETED (or CANCELLED)
+  status              String             @default("PENDING")
+  
+  // Server-computed financial snapshots
+  subtotal            Float
+  discountAmount      Float              @default(0.0)
+  taxAmount           Float              @default(0.0)
+  serviceCharge       Float              @default(0.0)
+  totalAmount         Float
+  
+  discountName        String?
+  couponCode          String?
+  
+  // Payment Model: Strictly counter payment
+  paymentStatus       String             @default("UNPAID") // UNPAID, PAID_AT_COUNTER
+  
+  specialInstructions String?
+  estimatedMinutes    Int                @default(20)
+
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  restaurant          Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table               Table?             @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  tableSession        TableSession?      @relation(fields: [tableSessionId], references: [id], onDelete: SetNull)
+  orderItems          OrderItem[]
+  statusHistory       OrderStatusHistory[]
+
+  @@index([restaurantId, status])
+  @@index([restaurantId, orderNumber])
+  @@index([restaurantId, createdAt])
+  @@index([customerPhone])
+}
+
+model OrderItem {
+  id                  String      @id @default(cuid())
+  orderId             String
+  foodItemId          String?     // Can be null if item deleted from menu
+  
+  // CRITICAL: Immutable snapshots so price/name updates never alter historical bills!
+  nameSnapshot        String
+  priceSnapshot       Float
+  quantity            Int
+  
+  // JSON array string of selected add-ons with snapshot prices, sizes, etc.
+  customizations      String?     
+  specialInstructions String?
+  subtotal            Float
+
+  order               Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  foodItem            FoodItem?   @relation(fields: [foodItemId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([foodItemId])
+}
+
+model OrderStatusHistory {
+  id         String   @id @default(cuid())
+  orderId    String
+  fromStatus String?
+  toStatus   String
+  changedBy  String   @default("System") // "Customer", "Staff", "Admin"
+  note       String?
+  timestamp  DateTime @default(now())
+
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model Discount {
+  id             String      @id @default(cuid())
+  restaurantId   String
+  title          String      // e.g. "Festival Discount", "Happy Hours 15% OFF"
+  description    String?
+  discountType   String      // "PERCENTAGE" | "FLAT"
+  discountValue  Float       // e.g. 15 for 15%, or 100 for ₹100
+  scope          String      @default("ALL") // "ALL", "CATEGORY", "ITEM"
+  targetId       String?     // categoryId or foodItemId if scoped
+  minOrderValue  Float       @default(0.0)
+  maxDiscount    Float?      // Cap on percentage discounts (e.g. max ₹150)
+  startDate      String?     // YYYY-MM-DD
+  endDate        String?     // YYYY-MM-DD
+  startTime      String?     // HH:mm (e.g. "16:00")
+  endTime        String?     // HH:mm (e.g. "18:00")
+  isActive       Boolean     @default(true)
+
+  restaurant     Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, isActive])
+}
+
+model Coupon {
+  id             String      @id @default(cuid())
+  restaurantId   String
+  code           String      // e.g. "WELCOME100", "PITCAFE20"
+  description    String?
+  discountType   String      // "PERCENTAGE" | "FLAT"
+  discountValue  Float
+  minOrderValue  Float       @default(0.0)
+  maxDiscount    Float?
+  usageLimit     Int?        // Null for unlimited
+  usedCount      Int         @default(0)
+  validUntil     String?     // YYYY-MM-DD
+  isActive       Boolean     @default(true)
+
+  restaurant     Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, code])
+  @@index([restaurantId, isActive])
+}
+
+model SocialLink {
+  id           String      @id @default(cuid())
+  restaurantId String
+  platform     String      // "instagram", "facebook", "youtube", "x", "whatsapp", "maps", "phone", "email", "website"
+  url          String
+  label        String
+  displayOrder Int         @default(0)
+
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, displayOrder])
+}
+
+model CustomerProfile {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  phone     String?
+  googleId  String?  @unique
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id           String      @id @default(cuid())
+  restaurantId String
+  action       String      // e.g. "PRICE_CHANGE", "QR_DEACTIVATED", "DISCOUNT_CREATED"
+  details      String
+  performedBy  String      @default("Admin")
+  timestamp    DateTime    @default(now())
+
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, timestamp])
+}

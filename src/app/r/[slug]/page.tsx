@@ -71,12 +71,12 @@ export default async function RestaurantPage({
   const categories = await MenuService.getPublicMenu(restaurant.id);
 
   // Format categories for client menu
-  const formattedCategories = categories.map((cat) => ({
+  const formattedCategories = categories.map((cat: any) => ({
     id: cat.id,
     name: cat.name,
     slug: cat.slug,
     description: cat.description,
-    foodItems: cat.foodItems.map((item) => ({
+    foodItems: (cat.foodItems || []).map((item: any) => ({
       id: item.id,
       name: item.name,
       slug: item.slug,
@@ -91,13 +91,13 @@ export default async function RestaurantPage({
       isBestseller: item.isBestseller,
       ingredients: item.ingredients,
       allergens: item.allergens,
-      addonGroups: item.addonGroups.map((ag) => ({
+      addonGroups: (item.addonGroups || []).map((ag: any) => ({
         id: ag.id,
         title: ag.title,
         minSelect: ag.minSelect,
         maxSelect: ag.maxSelect,
         isRequired: ag.isRequired,
-        addons: ag.addons.map((a) => ({
+        addons: (ag.addons || []).map((a: any) => ({
           id: a.id,
           name: a.name,
           price: a.price,

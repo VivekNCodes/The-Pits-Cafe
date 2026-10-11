@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { FALLBACK_CATEGORIES } from '@/lib/data/the-pit-cafe-fallback';
 
 export class MenuService {
   /**
@@ -7,7 +8,7 @@ export class MenuService {
    */
   static async getPublicMenu(restaurantId: string) {
     try {
-      return await prisma.category.findMany({
+      const cats = await prisma.category.findMany({
         where: {
           restaurantId,
           isActive: true,
@@ -30,10 +31,11 @@ export class MenuService {
           },
         },
       });
+      if (cats && cats.length > 0) return cats;
     } catch (err) {
-      console.error('MenuService.getPublicMenu error:', err);
-      return [];
+      console.warn('MenuService.getPublicMenu error, using fallback:', err);
     }
+    return FALLBACK_CATEGORIES as any;
   }
 
   /**

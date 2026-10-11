@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { FALLBACK_RESTAURANT } from '@/lib/data/the-pit-cafe-fallback';
 
 export class RestaurantService {
   /**
@@ -7,7 +8,7 @@ export class RestaurantService {
    */
   static async getBySlug(slug: string) {
     try {
-      return await prisma.restaurant.findUnique({
+      const rest = await prisma.restaurant.findUnique({
         where: { slug },
         include: {
           socialLinks: {
@@ -15,10 +16,15 @@ export class RestaurantService {
           },
         },
       });
+      if (rest) return rest;
     } catch (err) {
-      console.error('RestaurantService.getBySlug error:', err);
-      return null;
+      console.warn('RestaurantService.getBySlug error, using fallback:', err);
     }
+
+    if (slug === 'the-pit-cafe' || !slug) {
+      return FALLBACK_RESTAURANT as any;
+    }
+    return null;
   }
 
   /**

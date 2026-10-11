@@ -30,26 +30,32 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({
   params,
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const restaurant = await RestaurantService.getBySlug(params.slug);
-  if (!restaurant) {
-    return { title: 'Restaurant Not Found' };
+  try {
+    const restaurant = await RestaurantService.getBySlug(params.slug);
+    if (!restaurant) {
+      return { title: 'The Pit Cafe | Rohini Sector 16' };
+    }
+    return {
+      title: `${restaurant.name} | ${restaurant.tagline || 'Biker Courtyard & Midnight Fast Food'}`,
+      description:
+        restaurant.description ||
+        `Welcome to ${restaurant.name} in Sector 16 Rohini. Enjoy viral Pull-Apart Cheesy Garlic Bread, Kurkuri Chaap, Biker Burgers, and thick shakes. Open till 5:00 AM.`,
+      openGraph: {
+        title: `${restaurant.name} — Rohini's Legendary Biker Pitstop`,
+        description: restaurant.description || undefined,
+        images: restaurant.heroImageUrl ? [{ url: restaurant.heroImageUrl }] : undefined,
+      },
+    };
+  } catch {
+    return { title: 'The Pit Cafe | Rohini Sector 16' };
   }
-  return {
-    title: `${restaurant.name} | ${restaurant.tagline || 'Biker Courtyard & Midnight Fast Food'}`,
-    description:
-      restaurant.description ||
-      `Welcome to ${restaurant.name} in Sector 16 Rohini. Enjoy viral Pull-Apart Cheesy Garlic Bread, Kurkuri Chaap, Biker Burgers, and thick shakes. Open till 5:00 AM.`,
-    openGraph: {
-      title: `${restaurant.name} — Rohini's Legendary Biker Pitstop`,
-      description: restaurant.description || undefined,
-      images: restaurant.heroImageUrl ? [{ url: restaurant.heroImageUrl }] : undefined,
-    },
-  };
 }
 
 export default async function RestaurantPage({
@@ -102,10 +108,17 @@ export default async function RestaurantPage({
   }));
 
   // Fetch active promotional discounts
-  const activeDiscounts = await (await import('@/lib/prisma')).default.discount.findMany({
-    where: { restaurantId: restaurant.id, isActive: true },
-    take: 3,
-  });
+  const activeDiscounts = await (async () => {
+    try {
+      const prismaClient = (await import('@/lib/prisma')).default;
+      return await prismaClient.discount.findMany({
+        where: { restaurantId: restaurant.id, isActive: true },
+        take: 3,
+      });
+    } catch {
+      return [];
+    }
+  })();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0c0d10] text-zinc-100 selection:bg-amber-500 selection:text-black">

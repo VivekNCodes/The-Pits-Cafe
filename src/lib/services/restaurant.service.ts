@@ -6,14 +6,19 @@ export class RestaurantService {
    * Never leaks data from another tenant.
    */
   static async getBySlug(slug: string) {
-    return prisma.restaurant.findUnique({
-      where: { slug },
-      include: {
-        socialLinks: {
-          orderBy: { displayOrder: 'asc' },
+    try {
+      return await prisma.restaurant.findUnique({
+        where: { slug },
+        include: {
+          socialLinks: {
+            orderBy: { displayOrder: 'asc' },
+          },
         },
-      },
-    });
+      });
+    } catch (err) {
+      console.error('RestaurantService.getBySlug error:', err);
+      return null;
+    }
   }
 
   /**

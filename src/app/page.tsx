@@ -1,5 +1,7 @@
 import RestaurantPage, { generateMetadata as generateRestMetadata } from './r/[slug]/page';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata() {
   return generateRestMetadata({ params: { slug: 'the-pit-cafe' } });
 }

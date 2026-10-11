@@ -6,29 +6,34 @@ export class MenuService {
    * Strictly isolated by restaurantId.
    */
   static async getPublicMenu(restaurantId: string) {
-    return prisma.category.findMany({
-      where: {
-        restaurantId,
-        isActive: true,
-      },
-      orderBy: { displayOrder: 'asc' },
-      include: {
-        foodItems: {
-          where: { isAvailable: true },
-          orderBy: { displayOrder: 'asc' },
-          include: {
-            addonGroups: {
-              include: {
-                addons: {
-                  where: { isAvailable: true },
-                  orderBy: { displayOrder: 'asc' },
+    try {
+      return await prisma.category.findMany({
+        where: {
+          restaurantId,
+          isActive: true,
+        },
+        orderBy: { displayOrder: 'asc' },
+        include: {
+          foodItems: {
+            where: { isAvailable: true },
+            orderBy: { displayOrder: 'asc' },
+            include: {
+              addonGroups: {
+                include: {
+                  addons: {
+                    where: { isAvailable: true },
+                    orderBy: { displayOrder: 'asc' },
+                  },
                 },
               },
             },
           },
         },
-      },
-    });
+      });
+    } catch (err) {
+      console.error('MenuService.getPublicMenu error:', err);
+      return [];
+    }
   }
 
   /**

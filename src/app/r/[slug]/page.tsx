@@ -121,11 +121,11 @@ export default async function RestaurantPage({
   })();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0c0d10] text-zinc-100 selection:bg-amber-500 selection:text-black">
+    <div className="min-h-screen flex flex-col bg-[#0c0d10] text-zinc-100 selection:bg-red-600 selection:text-white">
       {/* Maintenance Mode Alert if enabled */}
       {restaurant.maintenanceMode && (
-        <div className="bg-amber-500/20 border-b border-amber-500/30 text-amber-300 px-4 py-3 text-center text-xs font-medium flex items-center justify-center gap-2">
-          <ShieldAlert className="w-4 h-4 text-amber-400" />
+        <div className="bg-red-600/10 border-b border-red-500/30 text-red-300 px-4 py-3 text-center text-xs font-medium flex items-center justify-center gap-2">
+          <ShieldAlert className="w-4 h-4 text-red-400" />
           <span>
             {restaurant.maintenanceNotice ||
               'Ordering is temporarily paused for routine kitchen prep. You can still browse our full menu.'}
@@ -144,18 +144,18 @@ export default async function RestaurantPage({
         {activeDiscounts.length > 0 && (
           <div className="bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 border-y border-zinc-800/80 py-3.5 px-4 sm:px-6">
             <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-4 text-xs">
-              <span className="font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+              <span className="font-bold text-red-500 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
                 <Sparkles className="w-3.5 h-3.5" />
                 Active Pitstop Deals:
               </span>
               {activeDiscounts.map((d) => (
                 <div
                   key={d.id}
-                  className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-zinc-200 flex items-center gap-2"
+                  className="px-3 py-1 rounded-full bg-red-600/10 border border-red-500/30 text-zinc-200 flex items-center gap-2"
                 >
-                  <Tag className="w-3 h-3 text-amber-400" />
+                  <Tag className="w-3 h-3 text-red-400" />
                   <span className="font-semibold text-white">{d.title}:</span>
-                  <span className="text-amber-300 font-mono">
+                  <span className="text-red-400 font-mono">
                     {d.discountType === 'PERCENTAGE'
                       ? `${d.discountValue}% OFF`
                       : `₹${d.discountValue} OFF`}
@@ -171,8 +171,8 @@ export default async function RestaurantPage({
         <section className="py-16 sm:py-20 border-b border-zinc-800/80 bg-gradient-to-b from-[#0c0d10] via-[#111317] to-[#0c0d10] relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
-                <Flame className="w-3.5 h-3.5 text-orange-400" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-600/10 text-red-500 border border-red-500/20 mb-3">
+                <Flame className="w-3.5 h-3.5 text-red-500" />
                 Rohini’s Crave List
               </span>
               <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
@@ -185,7 +185,7 @@ export default async function RestaurantPage({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
               {/* Card 1: Pull-Apart Garlic Bread */}
-              <div className="group rounded-3xl bg-zinc-900/60 border border-zinc-800/90 overflow-hidden hover:border-amber-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10 flex flex-col justify-between">
+              <div className="group rounded-3xl bg-zinc-900/60 border border-zinc-800/90 overflow-hidden hover:border-red-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 flex flex-col justify-between">
                 <div>
                   <div className="relative h-56 overflow-hidden">
                     <img
@@ -194,7 +194,7 @@ export default async function RestaurantPage({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-80" />
-                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500 text-black shadow-lg">
+                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-red-600 text-white shadow-lg">
                       Viral Bestseller 🔥
                     </span>
                     <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-black/80 backdrop-blur-md text-white border border-zinc-700">
@@ -202,7 +202,7 @@ export default async function RestaurantPage({
                     </span>
                   </div>
                   <div className="p-5 space-y-2">
-                    <h3 className="font-display font-bold text-lg text-white group-hover:text-amber-400 transition-colors">
+                    <h3 className="font-display font-bold text-lg text-white group-hover:text-red-500 transition-colors">
                       Pull-Apart Cheesy Garlic Bread
                     </h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
@@ -213,7 +213,7 @@ export default async function RestaurantPage({
                 <div className="p-5 pt-0">
                   <Link
                     href="#menu"
-                    className="w-full py-2.5 rounded-xl bg-zinc-800/80 hover:bg-amber-500 hover:text-black text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    className="w-full py-2.5 rounded-xl bg-zinc-800/80 hover:bg-red-600 text-zinc-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm"
                   >
                     <span>Order on Menu</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -222,7 +222,7 @@ export default async function RestaurantPage({
               </div>
 
               {/* Card 2: Kurkuri Soya Chaap Sticks */}
-              <div className="group rounded-3xl bg-zinc-900/60 border border-zinc-800/90 overflow-hidden hover:border-amber-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10 flex flex-col justify-between">
+              <div className="group rounded-3xl bg-zinc-900/60 border border-zinc-800/90 overflow-hidden hover:border-red-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 flex flex-col justify-between">
                 <div>
                   <div className="relative h-56 overflow-hidden">
                     <img
@@ -231,7 +231,7 @@ export default async function RestaurantPage({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-80" />
-                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-orange-600 text-white shadow-lg">
+                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-red-600 text-white shadow-lg">
                       Crunch Favorite ⚡
                     </span>
                     <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-black/80 backdrop-blur-md text-white border border-zinc-700">
@@ -239,7 +239,7 @@ export default async function RestaurantPage({
                     </span>
                   </div>
                   <div className="p-5 space-y-2">
-                    <h3 className="font-display font-bold text-lg text-white group-hover:text-amber-400 transition-colors">
+                    <h3 className="font-display font-bold text-lg text-white group-hover:text-red-500 transition-colors">
                       Kurkuri Soya Chaap Sticks
                     </h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
@@ -250,7 +250,7 @@ export default async function RestaurantPage({
                 <div className="p-5 pt-0">
                   <Link
                     href="#menu"
-                    className="w-full py-2.5 rounded-xl bg-zinc-800/80 hover:bg-amber-500 hover:text-black text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    className="w-full py-2.5 rounded-xl bg-zinc-800/80 hover:bg-red-600 text-zinc-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm"
                   >
                     <span>Order on Menu</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -259,7 +259,7 @@ export default async function RestaurantPage({
               </div>
 
               {/* Card 3: The Pit Monster Biker Burger */}
-              <div className="group rounded-3xl bg-zinc-900/60 border border-zinc-800/90 overflow-hidden hover:border-amber-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10 flex flex-col justify-between">
+              <div className="group rounded-3xl bg-zinc-900/60 border border-zinc-800/90 overflow-hidden hover:border-red-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 flex flex-col justify-between">
                 <div>
                   <div className="relative h-56 overflow-hidden">
                     <img
@@ -268,7 +268,7 @@ export default async function RestaurantPage({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-80" />
-                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500 text-black shadow-lg">
+                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-bold bg-red-600 text-white shadow-lg">
                       Chef Heavyweight 🍔
                     </span>
                     <span className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-black/80 backdrop-blur-md text-white border border-zinc-700">
@@ -276,7 +276,7 @@ export default async function RestaurantPage({
                     </span>
                   </div>
                   <div className="p-5 space-y-2">
-                    <h3 className="font-display font-bold text-lg text-white group-hover:text-amber-400 transition-colors">
+                    <h3 className="font-display font-bold text-lg text-white group-hover:text-red-500 transition-colors">
                       The Pit Monster Biker Burger
                     </h3>
                     <p className="text-xs text-zinc-400 leading-relaxed">
@@ -287,7 +287,7 @@ export default async function RestaurantPage({
                 <div className="p-5 pt-0">
                   <Link
                     href="#menu"
-                    className="w-full py-2.5 rounded-xl bg-zinc-800/80 hover:bg-amber-500 hover:text-black text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    className="w-full py-2.5 rounded-xl bg-zinc-800/80 hover:bg-red-600 text-zinc-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm"
                   >
                     <span>Order on Menu</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -308,7 +308,7 @@ export default async function RestaurantPage({
         <section className="py-16 sm:py-24 border-t border-zinc-800/80 bg-zinc-950 relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center max-w-2xl mx-auto mb-14">
-              <span className="text-xs uppercase tracking-widest font-bold text-amber-400 mb-2 block">
+              <span className="text-xs uppercase tracking-widest font-bold text-red-500 mb-2 block">
                 More Than Just A Cafe
               </span>
               <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
@@ -321,8 +321,8 @@ export default async function RestaurantPage({
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Feature 1: Biker Courtyard */}
-              <div className="p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800 hover:border-amber-500/40 transition-colors space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+              <div className="p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800 hover:border-red-500/40 transition-colors space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-red-600/10 border border-red-500/20 text-red-500 flex items-center justify-center">
                   <Compass className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-bold text-base text-white">
@@ -334,7 +334,7 @@ export default async function RestaurantPage({
               </div>
 
               {/* Feature 2: Open Till 5 AM */}
-              <div className="p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800 hover:border-amber-500/40 transition-colors space-y-3">
+              <div className="p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800 hover:border-red-500/40 transition-colors space-y-3">
                 <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
                   <Clock className="w-6 h-6" />
                 </div>
@@ -347,8 +347,8 @@ export default async function RestaurantPage({
               </div>
 
               {/* Feature 3: Frictionless QR Dine-in */}
-              <div className="p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800 hover:border-amber-500/40 transition-colors space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
+              <div className="p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800 hover:border-red-500/40 transition-colors space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-red-600/10 border border-red-500/20 text-red-500 flex items-center justify-center">
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-bold text-base text-white">
@@ -360,7 +360,7 @@ export default async function RestaurantPage({
               </div>
 
               {/* Feature 4: Zero-Wait Counter Payment */}
-              <div className="p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800 hover:border-amber-500/40 transition-colors space-y-3">
+              <div className="p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800 hover:border-red-500/40 transition-colors space-y-3">
                 <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
@@ -392,7 +392,7 @@ export default async function RestaurantPage({
                   
                   <div className="absolute bottom-4 left-4 right-4 p-4 sm:p-5 rounded-2xl bg-zinc-900/95 backdrop-blur-md border border-zinc-700/60 shadow-xl">
                     <p className="font-display font-bold text-sm text-white flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      <Sparkles className="w-4 h-4 text-red-500" />
                       The Pitstop Courtyard · Rohini Sector 16
                     </p>
                     <p className="text-[11px] text-zinc-400 mt-1">
@@ -404,13 +404,13 @@ export default async function RestaurantPage({
 
               {/* Narrative & Philosophy */}
               <div className="lg:col-span-6 space-y-6 text-left">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                  <Coffee className="w-3.5 h-3.5 text-amber-400" />
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-red-600/10 text-red-500 border border-red-500/30">
+                  <Coffee className="w-3.5 h-3.5 text-red-500" />
                   <span>The Pit Cafe Story</span>
                 </div>
 
                 <h2 className="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight">
-                  Born for the <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500">Open Road</span> & Midnight Cravings
+                  Born for the <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-red-200 to-red-500">Open Road</span> & Midnight Cravings
                 </h2>
 
                 <div className="space-y-4 text-sm sm:text-base text-zinc-300 leading-relaxed">
@@ -427,7 +427,7 @@ export default async function RestaurantPage({
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <a
                     href="tel:+919717780445"
-                    className="flex items-center gap-2 text-xs text-zinc-200 bg-zinc-900 px-4 py-2.5 rounded-xl border border-zinc-800 hover:border-amber-500 transition-colors"
+                    className="flex items-center gap-2 text-xs text-zinc-200 bg-zinc-900 px-4 py-2.5 rounded-xl border border-zinc-800 hover:border-red-500 transition-colors"
                   >
                     <Phone className="w-4 h-4 text-emerald-400" />
                     <span>+91 97177 80445</span>
@@ -436,13 +436,13 @@ export default async function RestaurantPage({
                     href="https://www.instagram.com/thepitcafe_rohini_/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-xs text-zinc-200 bg-zinc-900 px-4 py-2.5 rounded-xl border border-zinc-800 hover:border-amber-500 transition-colors"
+                    className="flex items-center gap-2 text-xs text-zinc-200 bg-zinc-900 px-4 py-2.5 rounded-xl border border-zinc-800 hover:border-red-500 transition-colors"
                   >
                     <Instagram className="w-4 h-4 text-pink-400" />
                     <span>@thepitcafe_rohini_</span>
                   </a>
                   <div className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-900 px-4 py-2.5 rounded-xl border border-zinc-800">
-                    <Clock className="w-4 h-4 text-amber-400" />
+                    <Clock className="w-4 h-4 text-red-400" />
                     <span>10:00 AM – 5:00 AM</span>
                   </div>
                 </div>
@@ -456,8 +456,8 @@ export default async function RestaurantPage({
         <section className="py-16 sm:py-20 border-t border-zinc-800/80 bg-zinc-950">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3">
-                <Star className="w-3.5 h-3.5 fill-current text-amber-400" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-600/10 text-red-500 border border-red-500/20 mb-3">
+                <Star className="w-3.5 h-3.5 fill-current text-red-500" />
                 Google Verified Ratings (4.6 / 5.0)
               </div>
               <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
@@ -471,7 +471,7 @@ export default async function RestaurantPage({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Review 1 */}
               <div className="p-6 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-4">
-                <div className="flex items-center gap-1 text-amber-400">
+                <div className="flex items-center gap-1 text-red-500">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-current" />
                   ))}
@@ -487,7 +487,7 @@ export default async function RestaurantPage({
 
               {/* Review 2 */}
               <div className="p-6 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-4">
-                <div className="flex items-center gap-1 text-amber-400">
+                <div className="flex items-center gap-1 text-red-500">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-current" />
                   ))}
@@ -503,7 +503,7 @@ export default async function RestaurantPage({
 
               {/* Review 3 */}
               <div className="p-6 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-4">
-                <div className="flex items-center gap-1 text-amber-400">
+                <div className="flex items-center gap-1 text-red-500">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-current" />
                   ))}
@@ -527,8 +527,8 @@ export default async function RestaurantPage({
               
               {/* Left Column: Direct Address & Quick Connect */}
               <div className="lg:col-span-5 space-y-6 text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                  <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-red-600/10 text-red-500 border border-red-500/20">
+                  <MapPin className="w-3.5 h-3.5 text-red-500" />
                   <span>Find Us in Rohini</span>
                 </div>
 
@@ -538,13 +538,13 @@ export default async function RestaurantPage({
 
                 <div className="space-y-4 text-xs sm:text-sm text-zinc-300">
                   <div className="flex items-start gap-3 p-4 rounded-2xl bg-zinc-900/80 border border-zinc-800">
-                    <MapPin className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <MapPin className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="font-bold text-white">Exact Address:</p>
                       <p className="text-zinc-400 mt-0.5 leading-relaxed">
                         House 5/114, Pocket 5, Sector 16, Rohini, New Delhi - 110089
                       </p>
-                      <p className="text-[11px] text-amber-400/90 mt-1 font-medium">
+                      <p className="text-[11px] text-red-400 mt-1 font-medium">
                         Landmark: Near Bawana Road / Sector 16 Market
                       </p>
                     </div>
@@ -561,10 +561,10 @@ export default async function RestaurantPage({
                   </div>
 
                   <div className="flex items-center gap-3 p-4 rounded-2xl bg-zinc-900/80 border border-zinc-800">
-                    <Phone className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                    <Phone className="w-5 h-5 text-red-500 flex-shrink-0" />
                     <div>
                       <p className="font-bold text-white">Phone & Table Enquiries:</p>
-                      <a href="tel:+919717780445" className="text-amber-400 hover:underline">
+                      <a href="tel:+919717780445" className="text-red-400 hover:underline">
                         +91 97177 80445
                       </a>
                     </div>
@@ -576,7 +576,7 @@ export default async function RestaurantPage({
                     href="https://www.google.com/maps/search/?api=1&query=THE+PIT+CAFE+Sector+16+Rohini+New+Delhi"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center gap-2 shadow-lg transition-all"
+                    className="px-5 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-red-600/30 transition-all"
                   >
                     <Compass className="w-4 h-4" />
                     <span>Get Directions on Google Maps</span>
@@ -613,9 +613,9 @@ export default async function RestaurantPage({
                     href="https://www.google.com/maps/search/?api=1&query=THE+PIT+CAFE+Sector+16+Rohini+New+Delhi"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-black/90 backdrop-blur-md border border-zinc-700 text-xs font-bold text-white flex items-center gap-2 hover:border-amber-500 transition-colors shadow-2xl"
+                    className="absolute bottom-4 right-4 px-3.5 py-2 rounded-xl bg-black/90 backdrop-blur-md border border-zinc-700 text-xs font-bold text-white flex items-center gap-2 hover:border-red-500 transition-colors shadow-2xl"
                   >
-                    <Compass className="w-4 h-4 text-amber-400" />
+                    <Compass className="w-4 h-4 text-red-500" />
                     <span>Open in Maps App</span>
                   </a>
                 </div>
@@ -629,7 +629,7 @@ export default async function RestaurantPage({
         {restaurant.reservationsEnabled && (
           <section className="py-16 sm:py-20 bg-gradient-to-t from-zinc-950 via-[#121419] to-[#0c0d10] border-t border-zinc-800">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
-              <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/10">
+              <div className="w-14 h-14 rounded-2xl bg-red-600/10 border border-red-500/30 text-red-500 flex items-center justify-center mx-auto shadow-lg shadow-red-600/20">
                 <Calendar className="w-7 h-7" />
               </div>
               <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
@@ -641,7 +641,7 @@ export default async function RestaurantPage({
               <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href={`/r/${restaurant.slug}/reservation`}
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold text-sm shadow-lg shadow-orange-500/20 hover:brightness-110 active:scale-95 transition-all"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-lg shadow-red-600/30 active:scale-95 transition-all"
                 >
                   <Calendar className="w-4 h-4" />
                   <span>Reserve Courtyard Table Now</span>

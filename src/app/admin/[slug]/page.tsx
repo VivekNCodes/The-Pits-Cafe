@@ -41,9 +41,120 @@ import {
   Sparkles,
   Coffee,
   MessageCircle,
+  Upload,
 } from 'lucide-react';
 import { ImageCropperModal } from '@/components/ImageCropperModal';
 import { PitCafeLogo } from '@/components/PitCafeLogo';
+
+const FALLBACK_ORDERS = [
+  {
+    id: 'demo-ord-1',
+    orderNumber: '#1248',
+    customerName: 'Arjun Mehta',
+    customerPhone: '+91 98765 43210',
+    orderType: 'DINE_IN',
+    table: { tableNumber: 'T1', location: 'Courtyard' },
+    status: 'PREPARING',
+    paymentStatus: 'PAID_AT_COUNTER',
+    totalAmount: 760,
+    specialInstructions: 'Make it extra spicy, extra garlic dip',
+    createdAt: new Date().toISOString(),
+    orderItems: [
+      { id: 'doi-1', nameSnapshot: 'BBQ Chicken Burger', quantity: 1, subtotal: 280 },
+      { id: 'doi-2', nameSnapshot: 'Loaded Fries with Cheddar', quantity: 1, subtotal: 220 },
+      { id: 'doi-3', nameSnapshot: 'Classic Café Mocha', quantity: 1, subtotal: 260 },
+    ],
+  },
+  {
+    id: 'demo-ord-2',
+    orderNumber: '#1247',
+    customerName: 'Rahul Sharma',
+    customerPhone: '+91 98112 34567',
+    orderType: 'DINE_IN',
+    table: { tableNumber: 'T3', location: 'Courtyard' },
+    status: 'READY',
+    paymentStatus: 'PAID_AT_COUNTER',
+    totalAmount: 540,
+    specialInstructions: 'Less ice in beverage',
+    createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    orderItems: [
+      { id: 'doi-4', nameSnapshot: 'Peri Peri Pasta', quantity: 1, subtotal: 260 },
+      { id: 'doi-5', nameSnapshot: 'Belgian Chocolate Thick Shake', quantity: 1, subtotal: 280 },
+    ],
+  },
+  {
+    id: 'demo-ord-3',
+    orderNumber: '#1246',
+    customerName: 'Priya Kapoor',
+    customerPhone: '+91 99991 22334',
+    orderType: 'DINE_IN',
+    table: { tableNumber: 'T4', location: 'Indoor' },
+    status: 'PREPARING',
+    paymentStatus: 'UNPAID',
+    totalAmount: 1120,
+    createdAt: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+    orderItems: [
+      { id: 'doi-6', nameSnapshot: 'Pull-Apart Cheesy Garlic Bread', quantity: 2, subtotal: 360 },
+      { id: 'doi-7', nameSnapshot: 'Afghani Malai Chaap', quantity: 2, subtotal: 440 },
+      { id: 'doi-8', nameSnapshot: 'Hazelnut Iced Cold Coffee', quantity: 2, subtotal: 320 },
+    ],
+  },
+  {
+    id: 'demo-ord-4',
+    orderNumber: '#1245',
+    customerName: 'Sneha Roy',
+    customerPhone: '+91 97110 99887',
+    orderType: 'TAKEAWAY',
+    table: null,
+    status: 'COMPLETED',
+    paymentStatus: 'PAID_AT_COUNTER',
+    totalAmount: 320,
+    createdAt: new Date(Date.now() - 75 * 60 * 1000).toISOString(),
+    orderItems: [
+      { id: 'doi-9', nameSnapshot: 'Peri Peri Crispy Fries', quantity: 1, subtotal: 140 },
+      { id: 'doi-10', nameSnapshot: 'Classic Thick Cold Coffee', quantity: 1, subtotal: 180 },
+    ],
+  },
+];
+
+const FALLBACK_RESERVATIONS = [
+  {
+    id: 'demo-res-1',
+    customerName: 'Rohit Verma',
+    customerPhone: '+91 98765 43210',
+    customerEmail: 'rohit@bikerclub.com',
+    guestCount: 4,
+    reservationDate: new Date().toISOString().split('T')[0],
+    startTime: '19:00',
+    status: 'CONFIRMED',
+    table: { tableNumber: 'T1', location: 'Biker Courtyard' },
+    specialRequest: 'Biker club meetup, outdoor table near parking line',
+  },
+  {
+    id: 'demo-res-2',
+    customerName: 'Ananya Sharma',
+    customerPhone: '+91 98112 34567',
+    customerEmail: 'ananya@gmail.com',
+    guestCount: 2,
+    reservationDate: new Date().toISOString().split('T')[0],
+    startTime: '20:30',
+    status: 'ARRIVED',
+    table: { tableNumber: 'T3', location: 'Biker Courtyard' },
+    specialRequest: 'Birthday celebration with garlic bread',
+  },
+  {
+    id: 'demo-res-3',
+    customerName: 'Vikram Rajput',
+    customerPhone: '+91 99991 22334',
+    customerEmail: 'vikram@yahoo.com',
+    guestCount: 6,
+    reservationDate: new Date().toISOString().split('T')[0],
+    startTime: '21:00',
+    status: 'CONFIRMED',
+    table: { tableNumber: 'T4', location: 'Indoor Lounge' },
+    specialRequest: 'Late dinner after long ride',
+  },
+];
 
 export default function AdminDashboardPage() {
   const params = useParams();
@@ -98,6 +209,112 @@ export default function AdminDashboardPage() {
   // Settings form state
   const [settingsForm, setSettingsForm] = useState<any>(null);
   const [settingsSavedNotice, setSettingsSavedNotice] = useState(false);
+
+  // Device Image Upload Refs for Settings
+  const logoInputRef = React.useRef<HTMLInputElement>(null);
+  const heroInputRef = React.useRef<HTMLInputElement>(null);
+  const storyInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleDeviceImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: 'logoUrl' | 'heroImageUrl' | 'storyImageUrl'
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDimension = 1400;
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          setSettingsForm((prev: any) => ({
+            ...prev,
+            [field]: compressedDataUrl,
+          }));
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCreateTestOrder = async () => {
+    try {
+      const sampleItem = menuCategories[0]?.foodItems[0] || {
+        id: 'sample-monster-burger',
+        name: 'The Pit Monster Biker Burger',
+        price: 220,
+      };
+      const res = await fetch(`/api/restaurant/${restaurantSlug}/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderType: 'DINE_IN',
+          tableId: tables[0]?.id,
+          customerName: 'Aman Sharma',
+          customerPhone: '+91 98765 43210',
+          specialInstructions: 'Extra cheese pull, bike parked outside table 1',
+          items: [
+            {
+              foodItemId: sampleItem.id,
+              quantity: 2,
+              customizations: [],
+            },
+          ],
+        }),
+      });
+      if (res.ok) {
+        await loadAllData();
+      }
+    } catch (e) {
+      console.error('Failed to create test order', e);
+    }
+  };
+
+  const handleCreateTestReservation = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const res = await fetch(`/api/restaurant/${restaurantSlug}/reservations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tableId: tables[0]?.id,
+          customerName: 'Rohit Verma',
+          customerPhone: '+91 98112 34567',
+          customerEmail: 'rohit@bikerclub.com',
+          guestCount: 4,
+          reservationDate: today,
+          startTime: '20:00',
+          specialRequest: 'Outdoor biker courtyard table with view of ride',
+        }),
+      });
+      if (res.ok) {
+        await loadAllData();
+      }
+    } catch (e) {
+      console.error('Failed to create test reservation', e);
+    }
+  };
 
   // Verify authentication first
   useEffect(() => {
@@ -521,11 +738,16 @@ export default function AdminDashboardPage() {
     );
   }
 
-  // Filter orders
-  const displayedOrders = orders.filter((o) => {
+  // Filter orders with fallback so Vercel deployment is never empty
+  const isDemoOrders = orders.length === 0;
+  const effectiveOrders = isDemoOrders ? FALLBACK_ORDERS : orders;
+  const displayedOrders = effectiveOrders.filter((o) => {
     if (orderStatusFilter === 'ALL') return true;
     return o.status === orderStatusFilter;
   });
+
+  const isDemoReservations = reservations.length === 0;
+  const effectiveReservations = isDemoReservations ? FALLBACK_RESERVATIONS : reservations;
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex text-zinc-900 font-sans">
@@ -533,11 +755,8 @@ export default function AdminDashboardPage() {
       <aside className="w-64 bg-[#111217] text-white flex-shrink-0 hidden md:flex flex-col justify-between p-5 border-r border-zinc-800 sticky top-0 h-screen overflow-y-auto">
         <div>
           {/* Logo & Brand matching Screen 6 */}
-          <div className="flex items-center gap-3 px-2 py-3 mb-6 border-b border-zinc-800/80">
-            <PitCafeLogo size="sm" />
-            <span className="font-display font-black text-sm tracking-wider text-white">
-              THE PIT CAFE
-            </span>
+          <div className="px-2 py-3 mb-6 border-b border-zinc-800/80">
+            <PitCafeLogo size="sm" showSubtitle={true} href={`/admin/${restaurantSlug}`} />
           </div>
 
           {/* Sidebar Navigation */}
@@ -1180,8 +1399,28 @@ export default function AdminDashboardPage() {
 
 
         {/* TAB 2: LIVE ORDERS (Kitchen & Operations) */}
+        {/* TAB 2: LIVE ORDERS (Kitchen & Operations) */}
         {activeTab === 'ORDERS' && (
           <div className="space-y-6 animate-fade-in">
+            {isDemoOrders && (
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex flex-wrap items-center justify-between gap-3 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <span>
+                    <strong>Vercel Live Preview Active:</strong> Displaying demo orders (0 live database records). Once table QR orders arrive, they appear here live.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCreateTestOrder}
+                  className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 active:scale-95 transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create Real Order in DB</span>
+                </button>
+              </div>
+            )}
+
             {/* Status Filter Chips */}
             <div className="flex items-center gap-2 overflow-x-auto pb-2">
               {['ALL', 'PENDING', 'ACCEPTED', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED'].map((s) => (
@@ -1190,8 +1429,8 @@ export default function AdminDashboardPage() {
                   onClick={() => setOrderStatusFilter(s)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                     orderStatusFilter === s
-                      ? 'bg-brand-600 text-white shadow-glow'
-                      : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
+                      ? 'bg-red-600 text-white shadow-sm font-bold'
+                      : 'bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-200'
                   }`}
                 >
                   {s}
@@ -1200,20 +1439,20 @@ export default function AdminDashboardPage() {
             </div>
 
             {displayedOrders.length === 0 ? (
-              <div className="p-12 text-center rounded-3xl bg-zinc-900/40 border border-zinc-800 text-zinc-400 text-xs">
-                No orders match the current filter.
+              <div className="p-12 text-center rounded-3xl bg-white border border-zinc-200 text-zinc-500 text-xs shadow-sm">
+                No orders match the current filter "{orderStatusFilter}".
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {displayedOrders.map((ord) => (
                   <div
                     key={ord.id}
-                    className={`p-5 rounded-3xl bg-darkSurface-card border flex flex-col justify-between shadow-xl space-y-4 ${
+                    className={`p-5 rounded-2xl bg-white border flex flex-col justify-between shadow-sm space-y-4 ${
                       ord.status === 'PENDING'
-                        ? 'border-brand-500 shadow-glow'
+                        ? 'border-red-400 ring-2 ring-red-100'
                         : ord.status === 'READY'
-                        ? 'border-emerald-500/50'
-                        : 'border-darkSurface-border'
+                        ? 'border-emerald-400'
+                        : 'border-zinc-200'
                     }`}
                   >
                     <div>
@@ -1221,96 +1460,96 @@ export default function AdminDashboardPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-display font-bold text-lg text-white">
+                            <h3 className="font-display font-bold text-lg text-zinc-900">
                               {ord.orderNumber}
                             </h3>
                             <span
                               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                                 ord.status === 'PENDING'
-                                  ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse'
+                                  ? 'bg-rose-50 text-rose-600 border border-rose-200 animate-pulse'
                                   : ord.status === 'ACCEPTED'
-                                  ? 'bg-blue-500/20 text-blue-400'
+                                  ? 'bg-blue-50 text-blue-600 border border-blue-200'
                                   : ord.status === 'PREPARING'
-                                  ? 'bg-amberGold/20 text-amberGold'
+                                  ? 'bg-amber-50 text-amber-600 border border-amber-200'
                                   : ord.status === 'READY'
-                                  ? 'bg-emerald-500/20 text-emerald-400'
-                                  : 'bg-zinc-800 text-zinc-400'
+                                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                                  : 'bg-zinc-100 text-zinc-600'
                               }`}
                             >
                               {ord.status}
                             </span>
                           </div>
-                          <p className="text-xs text-zinc-400 mt-1">
-                            <strong>{ord.customerName}</strong> ({ord.customerPhone})
+                          <p className="text-xs text-zinc-500 mt-1">
+                            <strong className="text-zinc-800">{ord.customerName}</strong> ({ord.customerPhone})
                           </p>
                         </div>
 
-                        <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-brand-300 font-semibold">
+                        <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-zinc-100 border border-zinc-200 text-zinc-800 font-semibold">
                           {ord.orderType === 'DINE_IN' ? `Table ${ord.table?.tableNumber || ''}` : 'Takeaway'}
                         </span>
                       </div>
 
                       {/* Items list */}
-                      <div className="mt-4 pt-3 border-t border-zinc-800 space-y-2 text-xs">
+                      <div className="mt-4 pt-3 border-t border-zinc-100 space-y-2 text-xs">
                         {ord.orderItems?.map((oi: any) => (
-                          <div key={oi.id} className="flex justify-between items-start text-zinc-300">
+                          <div key={oi.id} className="flex justify-between items-start text-zinc-700">
                             <div>
                               <span>
-                                {oi.nameSnapshot} <strong>×{oi.quantity}</strong>
+                                {oi.nameSnapshot} <strong className="text-zinc-900">×{oi.quantity}</strong>
                               </span>
                               {oi.customizations && (
-                                <p className="text-[10px] text-zinc-500">
+                                <p className="text-[10px] text-zinc-400">
                                   {JSON.parse(oi.customizations).map((c: any) => c.name).join(', ')}
                                 </p>
                               )}
                               {oi.specialInstructions && (
-                                <p className="text-[10px] text-brand-400 italic">
+                                <p className="text-[10px] text-red-600 italic">
                                   "{oi.specialInstructions}"
                                 </p>
                               )}
                             </div>
-                            <span className="font-mono text-white">₹{oi.subtotal}</span>
+                            <span className="font-mono font-bold text-zinc-900">₹{oi.subtotal}</span>
                           </div>
                         ))}
                       </div>
 
                       {ord.specialInstructions && (
-                        <div className="mt-3 p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] text-amberGold">
+                        <div className="mt-3 p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-800">
                           Note: {ord.specialInstructions}
                         </div>
                       )}
 
                       {/* Financial info */}
-                      <div className="mt-4 pt-3 border-t border-zinc-800 flex justify-between items-center text-xs">
-                        <span className="text-zinc-400">Total Bill</span>
+                      <div className="mt-4 pt-3 border-t border-zinc-100 flex justify-between items-center text-xs">
+                        <span className="text-zinc-500">Total Bill</span>
                         <div className="text-right">
-                          <span className="font-display font-extrabold text-base text-white">
+                          <span className="font-display font-black text-base text-zinc-900">
                             ₹{ord.totalAmount}
                           </span>
                           <p className="text-[10px]">
                             {ord.paymentStatus === 'PAID_AT_COUNTER' ? (
-                              <span className="text-emerald-400 font-bold">PAID AT COUNTER ✓</span>
+                              <span className="text-emerald-600 font-bold">PAID AT COUNTER ✓</span>
                             ) : (
-                              <span className="text-amberGold font-medium">UNPAID (Pending Counter)</span>
+                              <span className="text-amber-600 font-medium">UNPAID (Pending Counter)</span>
                             )}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Fast Status Action Buttons (Section 25, 71) */}
-                    <div className="pt-3 border-t border-zinc-800/80 space-y-2">
+                    {/* Fast Status Action Buttons */}
+                    <div className="pt-3 border-t border-zinc-100 space-y-2">
                       {ord.status === 'PENDING' && (
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             onClick={() => handleUpdateOrderStatus(ord.id, 'ACCEPTED')}
-                            className="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition-all"
+                            className="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all"
                           >
                             Accept Order
                           </button>
                           <button
                             onClick={() => handleUpdateOrderStatus(ord.id, 'CANCELLED')}
-                            className="py-2.5 rounded-xl bg-zinc-800 hover:bg-rose-600 text-zinc-300 hover:text-white font-semibold text-xs transition-all"
+                            className="py-2.5 rounded-xl bg-zinc-100 hover:bg-rose-50 text-zinc-700 hover:text-rose-600 border border-zinc-200 font-semibold text-xs transition-all"
                           >
                             Reject
                           </button>
@@ -1320,7 +1559,7 @@ export default function AdminDashboardPage() {
                       {ord.status === 'ACCEPTED' && (
                         <button
                           onClick={() => handleUpdateOrderStatus(ord.id, 'PREPARING')}
-                          className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-all"
+                          className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-all shadow-sm"
                         >
                           Start Kitchen Preparation →
                         </button>
@@ -1329,7 +1568,7 @@ export default function AdminDashboardPage() {
                       {ord.status === 'PREPARING' && (
                         <button
                           onClick={() => handleUpdateOrderStatus(ord.id, 'READY')}
-                          className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all"
+                          className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-sm"
                         >
                           Mark Ready to Serve / Pickup ✓
                         </button>
@@ -1338,7 +1577,7 @@ export default function AdminDashboardPage() {
                       {ord.status === 'READY' && (
                         <button
                           onClick={() => handleUpdateOrderStatus(ord.id, 'COMPLETED')}
-                          className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all"
+                          className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-sm"
                         >
                           Complete Order
                         </button>
@@ -1348,9 +1587,9 @@ export default function AdminDashboardPage() {
                       {ord.paymentStatus !== 'PAID_AT_COUNTER' && ord.status !== 'CANCELLED' && (
                         <button
                           onClick={() => handleMarkPaid(ord.id)}
-                          className="w-full py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-emerald-400 text-[11px] font-semibold border border-zinc-800 transition-colors flex items-center justify-center gap-1.5"
+                          className="w-full py-1.5 rounded-lg bg-zinc-50 hover:bg-zinc-100 text-zinc-700 hover:text-emerald-700 text-[11px] font-semibold border border-zinc-200 transition-colors flex items-center justify-center gap-1.5"
                         >
-                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                           Mark Paid at Counter
                         </button>
                       )}
@@ -1364,29 +1603,29 @@ export default function AdminDashboardPage() {
 
         {/* TAB 3: TABLES & QR MANAGEMENT (Section 41, 72) */}
         {activeTab === 'TABLES_QR' && (
-          <div className="space-y-6 animate-fade-in">
+          <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h2 className="font-display font-bold text-xl text-white">
+                <h2 className="font-display font-extrabold text-2xl text-zinc-900">
                   Table & QR Management
                 </h2>
-                <p className="text-xs text-zinc-400">
-                  Persistent table QR codes point dynamically to <code className="text-brand-300">/r/{restaurantSlug}/table/[slug]</code>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Persistent table QR codes point dynamically to <code className="text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded font-mono text-[11px]">/r/{restaurantSlug}/table/[slug]</code>
                 </p>
               </div>
 
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => setIsPrintMode(true)}
-                  className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs font-semibold border border-zinc-800 flex items-center gap-2 transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-semibold border border-zinc-200 shadow-sm flex items-center gap-2 transition-colors"
                 >
-                  <Printer className="w-4 h-4 text-brand-400" />
+                  <Printer className="w-4 h-4 text-red-600" />
                   Print QR Sheets
                 </button>
 
                 <button
                   onClick={() => setNewTableModal(true)}
-                  className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-glow flex items-center gap-2 transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm flex items-center gap-2 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Add Table
@@ -1402,33 +1641,33 @@ export default function AdminDashboardPage() {
                 return (
                   <div
                     key={t.id}
-                    className="p-5 rounded-2xl bg-darkSurface-card border border-darkSurface-border shadow-md space-y-4 flex flex-col justify-between"
+                    className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4 flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="font-display font-extrabold text-lg text-white">
+                        <span className="font-display font-extrabold text-lg text-zinc-900">
                           {t.tableNumber}
                         </span>
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                             t.status === 'OCCUPIED'
-                              ? 'bg-rose-500/20 text-rose-400'
-                              : 'bg-emerald-500/20 text-emerald-400'
+                              ? 'bg-rose-50 text-rose-600 border border-rose-200'
+                              : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
                           }`}
                         >
                           {t.status}
                         </span>
                       </div>
 
-                      <p className="text-xs text-zinc-400 mt-1">
-                        {t.location} • Capacity: <strong>{t.capacity} Guests</strong>
+                      <p className="text-xs text-zinc-500 mt-1">
+                        {t.location} • Capacity: <strong className="text-zinc-800">{t.capacity} Guests</strong>
                       </p>
 
-                      <div className="mt-3 p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800/80 flex items-center justify-between text-xs">
-                        <span className="text-zinc-400">QR Status</span>
+                      <div className="mt-3 p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between text-xs">
+                        <span className="text-zinc-500">QR Status</span>
                         <span
                           className={`font-semibold ${
-                            isActive ? 'text-emerald-400' : 'text-zinc-500'
+                            isActive ? 'text-emerald-600' : 'text-zinc-400'
                           }`}
                         >
                           {isActive ? 'Active' : 'Deactivated'}
@@ -1437,12 +1676,12 @@ export default function AdminDashboardPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-3 border-t border-zinc-800 flex items-center justify-between gap-2">
+                    <div className="pt-3 border-t border-zinc-100 flex items-center justify-between gap-2">
                       <button
                         onClick={() => handleViewQR(t)}
-                        className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs text-zinc-200 border border-zinc-800 flex items-center gap-1.5 transition-colors"
+                        className="px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-xs font-semibold text-zinc-800 border border-zinc-200 flex items-center gap-1.5 transition-colors"
                       >
-                        <Eye className="w-3.5 h-3.5 text-brand-400" />
+                        <Eye className="w-3.5 h-3.5 text-red-600" />
                         View QR
                       </button>
 
@@ -1450,8 +1689,8 @@ export default function AdminDashboardPage() {
                         onClick={() => handleToggleQR(t.id, isActive)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                           isActive
-                            ? 'bg-zinc-900 hover:bg-zinc-800 text-zinc-400'
-                            : 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30'
+                            ? 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
                         }`}
                       >
                         {isActive ? 'Deactivate' : 'Activate'}
@@ -1466,20 +1705,20 @@ export default function AdminDashboardPage() {
 
         {/* TAB 4: MENU CMS */}
         {activeTab === 'MENU_CMS' && (
-          <div className="space-y-6 animate-fade-in">
+          <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-display font-bold text-xl text-white">
+                <h2 className="font-display font-extrabold text-2xl text-zinc-900">
                   Menu & Food Items CMS
                 </h2>
-                <p className="text-xs text-zinc-400">
-                  Update item availability, pricing, and category structures in real-time.
+                <p className="text-xs text-zinc-500 mt-1">
+                  Update item availability, pricing, photos, and categories in real-time.
                 </p>
               </div>
 
               <button
                 onClick={handleOpenAddFood}
-                className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-glow flex items-center gap-2 transition-colors"
+                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm flex items-center gap-2 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Add Food Item
@@ -1490,8 +1729,8 @@ export default function AdminDashboardPage() {
             <div className="space-y-8">
               {menuCategories.map((cat) => (
                 <div key={cat.id} className="space-y-3">
-                  <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-                    <h3 className="font-display font-bold text-base text-zinc-200">
+                  <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
                       {cat.name} ({cat.foodItems.length})
                     </h3>
                   </div>
@@ -1500,13 +1739,13 @@ export default function AdminDashboardPage() {
                     {cat.foodItems.map((fi: any) => (
                       <div
                         key={fi.id}
-                        className={`p-4 rounded-2xl bg-darkSurface-card border flex flex-col justify-between gap-3 ${
-                          fi.isAvailable ? 'border-darkSurface-border shadow-sm' : 'border-zinc-800 opacity-60'
+                        className={`p-4 rounded-2xl bg-white border flex flex-col justify-between gap-3 shadow-sm ${
+                          fi.isAvailable ? 'border-zinc-200' : 'border-zinc-200 opacity-60'
                         }`}
                       >
                         <div className="flex items-start gap-3">
                           {/* Dish Image Thumbnail */}
-                          <div className="w-16 h-14 sm:w-18 sm:h-16 rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                          <div className="w-16 h-14 sm:w-18 sm:h-16 rounded-xl bg-zinc-100 border border-zinc-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
                             {fi.imageUrl ? (
                               <img
                                 src={fi.imageUrl}
@@ -1514,7 +1753,7 @@ export default function AdminDashboardPage() {
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <ImageIcon className="w-6 h-6 text-zinc-600" />
+                              <ImageIcon className="w-6 h-6 text-zinc-400" />
                             )}
                           </div>
 
@@ -1522,14 +1761,14 @@ export default function AdminDashboardPage() {
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span
                                 className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                                  fi.isVeg ? 'bg-emerald-400' : 'bg-rose-400'
+                                  fi.isVeg ? 'bg-emerald-500' : 'bg-red-500'
                                 }`}
                               />
-                              <h4 className="font-semibold text-xs sm:text-sm text-white truncate">
+                              <h4 className="font-bold text-xs sm:text-sm text-zinc-900 truncate">
                                 {fi.name}
                               </h4>
                               {fi.isBestseller && (
-                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                                   Bestseller
                                 </span>
                               )}
@@ -1538,12 +1777,12 @@ export default function AdminDashboardPage() {
                               )}
                             </div>
 
-                            <span className="font-display font-bold text-xs text-brand-400 mt-0.5 block">
+                            <span className="font-display font-bold text-xs text-red-600 mt-0.5 block">
                               ₹{fi.price} • {fi.preparationTime} mins
                             </span>
 
                             {fi.description && (
-                              <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1">
+                              <p className="text-[11px] text-zinc-500 mt-1 line-clamp-1">
                                 {fi.description}
                               </p>
                             )}
@@ -1551,13 +1790,13 @@ export default function AdminDashboardPage() {
                         </div>
 
                         {/* Actions: Edit dish + Availability Toggle */}
-                        <div className="pt-2 border-t border-zinc-800 flex items-center justify-between gap-2">
+                        <div className="pt-2 border-t border-zinc-100 flex items-center justify-between gap-2">
                           <button
                             type="button"
                             onClick={() => handleOpenEditFood(fi)}
-                            className="px-3 py-1.5 rounded-xl bg-zinc-800/90 hover:bg-brand-600 text-zinc-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-zinc-700/80 transition-colors"
+                            className="px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-semibold flex items-center gap-1.5 border border-zinc-200 transition-colors"
                           >
-                            <Edit2 className="w-3.5 h-3.5 text-brand-400" />
+                            <Edit2 className="w-3.5 h-3.5 text-red-600" />
                             <span>Edit Dish</span>
                           </button>
 
@@ -1566,8 +1805,8 @@ export default function AdminDashboardPage() {
                             onClick={() => handleToggleItemAvailability(fi.id, fi.isAvailable)}
                             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                               fi.isAvailable
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
-                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                                : 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'
                             }`}
                           >
                             {fi.isAvailable ? 'Available ✓' : 'Sold Out ✕'}
@@ -1584,328 +1823,490 @@ export default function AdminDashboardPage() {
 
         {/* TAB 5: RESERVATIONS */}
         {activeTab === 'RESERVATIONS' && (
-          <div className="space-y-6 animate-fade-in">
-            <div>
-              <h2 className="font-display font-bold text-xl text-white">
-                Table Reservations
-              </h2>
-              <p className="text-xs text-zinc-400">
-                Manage confirmed bookings, record arrivals, and prevent table clashes.
-              </p>
+          <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 className="font-display font-extrabold text-2xl text-zinc-900">
+                  Table Reservations
+                </h2>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Manage confirmed bookings, record arrivals, and prevent table clashes.
+                </p>
+              </div>
+
+              <button
+                onClick={handleCreateTestReservation}
+                className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm flex items-center gap-2 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add Real Booking to DB
+              </button>
             </div>
 
-            {reservations.length === 0 ? (
-              <div className="p-12 text-center rounded-3xl bg-zinc-900/40 border border-zinc-800 text-zinc-400 text-xs">
-                No active reservations recorded.
+            {/* Fallback Notice if database empty */}
+            {reservations.length === 0 && (
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  <span>
+                    <strong>Database currently has 0 reservation records.</strong> Displaying 3 verified sample courtyard bookings so you can review the interface.
+                  </span>
+                </div>
+                <button
+                  onClick={handleCreateTestReservation}
+                  className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-xs whitespace-nowrap shadow-sm"
+                >
+                  Create Real Reservation in DB
+                </button>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {reservations.map((r) => (
-                  <div
-                    key={r.id}
-                    className="p-5 rounded-2xl bg-darkSurface-card border border-darkSurface-border shadow-md space-y-3"
-                  >
-                    <div className="flex items-start justify-between">
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(reservations.length > 0 ? reservations : FALLBACK_RESERVATIONS).map((r: any) => (
+                <div
+                  key={r.id}
+                  className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-3 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h3 className="font-display font-bold text-base text-white">
+                        <h3 className="font-display font-bold text-base text-zinc-900">
                           {r.customerName}
                         </h3>
-                        <p className="text-xs text-zinc-400">
+                        <p className="text-xs text-zinc-500">
                           {r.customerPhone} {r.customerEmail ? `• ${r.customerEmail}` : ''}
                         </p>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-500/10 text-brand-400 border border-brand-500/30">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider">
                         {r.status}
                       </span>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800/80 space-y-1 text-xs text-zinc-300">
+                    <div className="mt-3 p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 space-y-1 text-xs text-zinc-700">
                       <p>
-                        Table: <strong className="text-white">{r.table?.tableNumber}</strong> ({r.table?.location})
+                        Table: <strong className="text-zinc-900">{r.table?.tableNumber || 'Table 4'}</strong> ({r.table?.location || 'Outdoor Courtyard'})
                       </p>
                       <p>
-                        Date & Time: <strong className="text-white">{r.reservationDate} at {r.startTime}</strong>
+                        Date & Time: <strong className="text-zinc-900">{r.reservationDate} at {r.startTime}</strong>
                       </p>
-                      <p>Guest Count: <strong>{r.guestCount} People</strong></p>
+                      <p>Guest Count: <strong className="text-zinc-900">{r.guestCount} Guests</strong></p>
                       {r.specialRequest && (
-                        <p className="text-[11px] text-amberGold italic mt-1">
-                          Request: "{r.specialRequest}"
-                        </p>
+                        <div className="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px]">
+                          <strong>Special Request:</strong> "{r.specialRequest}"
+                        </div>
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-400">
+                    <span>ID: {r.id.slice(0, 10)}...</span>
+                    <span className="text-emerald-600 font-semibold">Confirmed ✓</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {/* TAB 6: SETTINGS & WEBSITE CMS */}
         {activeTab === 'SETTINGS' && settingsForm && (
-          <div className="max-w-4xl space-y-8 animate-fade-in pb-12">
+          <div className="max-w-5xl space-y-8 animate-fade-in pb-12 mx-auto">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/30 mb-2">
-                <Sparkles className="w-3.5 h-3.5 text-amberGold" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-600 border border-red-200 mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-red-600" />
                 <span>Zero-Code Website CMS & Live Customizer</span>
               </div>
-              <h2 className="font-display font-bold text-2xl text-white">
+              <h2 className="font-display font-extrabold text-2xl text-zinc-900">
                 Live Website Customizer & Controls
               </h2>
-              <p className="text-xs text-zinc-400 mt-1 max-w-2xl">
-                Edit any piece of content across the entire website—from hero headlines and banner photos to Our Story, footer text, contact details, and diner policies. Updates reflect instantly for guests without touching code.
+              <p className="text-xs text-zinc-500 mt-1 max-w-2xl">
+                Upload your cafe photos and logo directly from your device, edit hero headlines, customize Our Story narrative, update operating hours, and configure policies. Updates reflect instantly for guests without touching code.
               </p>
             </div>
+
+            {/* Hidden file inputs for direct device upload */}
+            <input
+              ref={heroInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleDeviceImageUpload(e, 'heroImageUrl')}
+              className="hidden"
+            />
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleDeviceImageUpload(e, 'logoUrl')}
+              className="hidden"
+            />
+            <input
+              ref={storyInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleDeviceImageUpload(e, 'storyImageUrl')}
+              className="hidden"
+            />
 
             <form onSubmit={handleSaveSettings} className="space-y-8">
               
               {/* SECTION 1: Brand & Hero Presentation */}
-              <div className="p-6 sm:p-7 rounded-3xl bg-darkSurface-card border border-darkSurface-border space-y-5 shadow-card">
-                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-800">
-                  <div className="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold">
+              <div className="p-6 sm:p-7 rounded-2xl bg-white border border-zinc-200 space-y-6 shadow-sm">
+                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-100">
+                  <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center font-bold">
                     🎨
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-base text-white">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
                       Brand Identity & Hero Experience
                     </h3>
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-zinc-500">
                       Configure your cafe's main title, hero statement, banner image, and logo.
                     </p>
                   </div>
                 </div>
 
+                {/* Hero Banner Device Upload & Controls */}
+                <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <label className="text-xs font-bold text-zinc-800 block">Hero Banner Image</label>
+                      <p className="text-[11px] text-zinc-500">
+                        Upload your real cafe photo from your phone or PC.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => heroInputRef.current?.click()}
+                        className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Hero Image from Device</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSettingsForm({ ...settingsForm, heroImageUrl: '/images/pit-cafe-front-view.jpg' })}
+                        className="px-3 py-1.5 rounded-lg bg-white hover:bg-zinc-100 text-red-600 text-[11px] font-semibold border border-zinc-200 transition-colors"
+                      >
+                        Use Authentic Cafe Front Photo
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSettingsForm({ ...settingsForm, heroImageUrl: '/images/hero-banner.jpg' })}
+                        className="px-3 py-1.5 rounded-lg bg-white hover:bg-zinc-100 text-zinc-600 text-[11px] font-medium border border-zinc-200 transition-colors"
+                      >
+                        Use Food Feast Banner
+                      </button>
+                    </div>
+                  </div>
+
+                  <input
+                    type="text"
+                    value={settingsForm.heroImageUrl}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, heroImageUrl: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-200 text-xs text-zinc-800 focus:outline-none focus:border-red-500 font-mono text-[11px]"
+                    placeholder="/images/pit-cafe-front-view.jpg or https://... or base64"
+                  />
+
+                  {settingsForm.heroImageUrl && (
+                    <div className="mt-2 w-full h-44 sm:h-56 rounded-xl overflow-hidden border border-zinc-200 bg-zinc-900 relative shadow-inner">
+                      <img
+                        src={settingsForm.heroImageUrl}
+                        alt="Hero Banner Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                        <span className="px-2 py-1 rounded bg-black/75 text-[10px] text-white font-mono backdrop-blur-sm">
+                          Active Hero Banner
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => heroInputRef.current?.click()}
+                          className="px-2 py-1 rounded bg-red-600 hover:bg-red-700 text-[10px] text-white font-bold shadow"
+                        >
+                          Change
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Logo Device Upload & Controls */}
+                <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <label className="text-xs font-bold text-zinc-800 block">Cafe Logo</label>
+                      <p className="text-[11px] text-zinc-500">
+                        Upload your custom logo or select an authentic Pit Cafe preset.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Logo from Device</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSettingsForm({ ...settingsForm, logoUrl: '/images/pit-cafe-front-view.jpg' })}
+                        className="px-2.5 py-1 rounded-lg bg-white hover:bg-zinc-100 text-red-600 text-[11px] font-medium border border-zinc-200"
+                      >
+                        Use Cafe Front View Photo
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSettingsForm({ ...settingsForm, logoUrl: '/logo.png' })}
+                        className="px-2.5 py-1 rounded-lg bg-white hover:bg-zinc-100 text-zinc-700 text-[11px] font-medium border border-zinc-200"
+                      >
+                        Use Cutlery Seal
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full border-2 border-red-500 overflow-hidden bg-black flex-shrink-0 flex items-center justify-center shadow-sm">
+                      {settingsForm.logoUrl ? (
+                        <img
+                          src={settingsForm.logoUrl}
+                          alt="Logo Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-white text-xs font-bold">PIT</span>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      value={settingsForm.logoUrl}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, logoUrl: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-200 text-xs text-zinc-800 focus:outline-none focus:border-red-500 font-mono text-[11px]"
+                      placeholder="/images/pit-cafe-front-view.jpg or /logo.png"
+                    />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Cafe / Restaurant Name</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Cafe / Restaurant Name</label>
                     <input
                       type="text"
                       value={settingsForm.name}
                       onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Tagline / Slogan</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Tagline / Slogan</label>
                     <input
                       type="text"
                       value={settingsForm.tagline}
                       onChange={(e) => setSettingsForm({ ...settingsForm, tagline: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Hero Main Heading</label>
+                  <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Hero Main Heading</label>
                   <input
                     type="text"
                     value={settingsForm.heroHeading}
                     onChange={(e) => setSettingsForm({ ...settingsForm, heroHeading: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
-                    placeholder="e.g. Fast Flavors. Biker Energy. Pure Craving."
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
+                    placeholder="e.g. GOOD FOOD, BETTER ROADS"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Hero Subtitle / Description</label>
+                  <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Hero Subtitle / Description</label>
                   <textarea
                     value={settingsForm.heroSubtitle}
                     onChange={(e) => setSettingsForm({ ...settingsForm, heroSubtitle: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500 h-20"
-                    placeholder="Order directly from your table with QR, reserve a spot in our courtyard..."
-                  />
-                </div>
-
-                {/* Hero Banner Image URL & Quick Presets */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-zinc-300 block">Hero Banner Image URL</label>
-                    <button
-                      type="button"
-                      onClick={() => setSettingsForm({ ...settingsForm, heroImageUrl: '/images/hero-banner.jpg' })}
-                      className="text-[11px] text-brand-400 hover:text-brand-300 underline font-medium"
-                    >
-                      Use High-Res Pit Cafe Feast Banner
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    value={settingsForm.heroImageUrl}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, heroImageUrl: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500 font-mono text-[11px]"
-                    placeholder="/images/hero-banner.jpg or https://..."
-                  />
-                  {settingsForm.heroImageUrl && (
-                    <div className="mt-2 w-full h-32 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 relative">
-                      <img src={settingsForm.heroImageUrl} alt="Hero Banner Preview" className="w-full h-full object-cover" />
-                      <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-zinc-300 font-mono">
-                        Hero Preview
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Logo URL */}
-                <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Logo URL / Image Path</label>
-                  <input
-                    type="text"
-                    value={settingsForm.logoUrl}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, logoUrl: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500 font-mono text-[11px]"
-                    placeholder="https://images.unsplash... or /logo.png"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500 h-20"
+                    placeholder="A cafe for riders, dreamers and food lovers. Great food, great company and a vibe that keeps you coming back."
                   />
                 </div>
               </div>
 
               {/* SECTION 2: Our Story & Heritage Customizer */}
-              <div className="p-6 sm:p-7 rounded-3xl bg-darkSurface-card border border-darkSurface-border space-y-5 shadow-card">
-                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-800">
-                  <div className="w-8 h-8 rounded-lg bg-amberGold/10 text-amberGold flex items-center justify-center font-bold">
+              <div className="p-6 sm:p-7 rounded-2xl bg-white border border-zinc-200 space-y-6 shadow-sm">
+                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-100">
+                  <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center font-bold">
                     📖
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-base text-white">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
                       "Our Story" & Heritage Section
                     </h3>
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-zinc-500">
                       Craft the story of your cafe, biker culture, and food philosophy displayed on the homepage.
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Section Eyebrow / Tag</label>
-                    <input
-                      type="text"
-                      value={settingsForm.aboutHeading}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, aboutHeading: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
-                      placeholder="e.g. Our Story, The Pit Legacy"
-                    />
-                  </div>
+                {/* Story Image Device Upload */}
+                <div className="p-5 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <label className="text-xs font-bold text-zinc-800 block">Story Feature Image</label>
+                      <p className="text-[11px] text-zinc-500">
+                        Upload your real cafe photo or choose a preset.
+                      </p>
+                    </div>
 
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-semibold text-zinc-300 block">Story Feature Image URL</label>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => storyInputRef.current?.click()}
+                        className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Story Photo from Device</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSettingsForm({ ...settingsForm, storyImageUrl: '/images/pit-cafe-front-view.jpg' })}
+                        className="px-2.5 py-1 rounded-lg bg-white hover:bg-zinc-100 text-red-600 text-[11px] font-medium border border-zinc-200"
+                      >
+                        Use Cafe Front View
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => setSettingsForm({ ...settingsForm, storyImageUrl: '/images/our-story.jpg' })}
-                        className="text-[11px] text-brand-400 hover:text-brand-300 underline font-medium"
+                        className="px-2.5 py-1 rounded-lg bg-white hover:bg-zinc-100 text-zinc-700 text-[11px] font-medium border border-zinc-200"
                       >
                         Use Courtyard Photo
                       </button>
                     </div>
-                    <input
-                      type="text"
-                      value={settingsForm.storyImageUrl}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, storyImageUrl: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500 font-mono text-[11px]"
-                      placeholder="/images/our-story.jpg or https://..."
-                    />
                   </div>
+
+                  <input
+                    type="text"
+                    value={settingsForm.storyImageUrl}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, storyImageUrl: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl bg-white border border-zinc-200 text-xs text-zinc-800 focus:outline-none focus:border-red-500 font-mono text-[11px]"
+                    placeholder="/images/pit-cafe-front-view.jpg or https://..."
+                  />
+
+                  {settingsForm.storyImageUrl && (
+                    <div className="w-full h-44 rounded-xl overflow-hidden border border-zinc-200 bg-zinc-900 relative shadow-inner">
+                      <img src={settingsForm.storyImageUrl} alt="Story Preview" className="w-full h-full object-cover" />
+                      <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/75 text-[10px] text-zinc-200 font-mono">
+                        Story Photo Preview
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {settingsForm.storyImageUrl && (
-                  <div className="w-full h-36 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 relative">
-                    <img src={settingsForm.storyImageUrl} alt="Story Preview" className="w-full h-full object-cover" />
-                    <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-zinc-300 font-mono">
-                      Story Photo Preview
-                    </span>
-                  </div>
-                )}
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Section Eyebrow / Tag</label>
+                  <input
+                    type="text"
+                    value={settingsForm.aboutHeading}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, aboutHeading: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
+                    placeholder="e.g. Our Story, The Pit Legacy"
+                  />
+                </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1.5">
+                  <label className="text-xs font-semibold text-zinc-700 block mb-1.5">
                     Full Story / Narrative Text (Separate paragraphs with double newlines)
                   </label>
                   <textarea
                     value={settingsForm.aboutText}
                     onChange={(e) => setSettingsForm({ ...settingsForm, aboutText: e.target.value })}
-                    className="w-full px-3.5 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500 h-36 leading-relaxed"
+                    className="w-full px-3.5 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500 h-32 leading-relaxed"
                     placeholder="Tell your cafe's origin story, the thrill of motorcycle rides, premium ingredients, and community hangout vibe..."
                   />
-                  <p className="text-[10px] text-zinc-500 mt-1">
-                    Tip: Writing two paragraphs will automatically format into clean narrative blocks on the homepage.
-                  </p>
                 </div>
               </div>
 
               {/* SECTION 3: Footer Details & Diner Policies */}
-              <div className="p-6 sm:p-7 rounded-3xl bg-darkSurface-card border border-darkSurface-border space-y-5 shadow-card">
-                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-800">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+              <div className="p-6 sm:p-7 rounded-2xl bg-white border border-zinc-200 space-y-6 shadow-sm">
+                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-100">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                     📜
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-base text-white">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
                       Footer Presentation & Diner Policies
                     </h3>
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-zinc-500">
                       Customize footer summaries, payment policy statements, and copyright notices.
                     </p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Footer Brand Summary / Bio</label>
+                  <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Footer Brand Summary / Bio</label>
                   <textarea
                     value={settingsForm.description}
                     onChange={(e) => setSettingsForm({ ...settingsForm, description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500 h-20"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500 h-20"
                     placeholder="Short summary displayed under your cafe name in the footer..."
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Policy Badge Title</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Policy Badge Title</label>
                     <input
                       type="text"
                       value={settingsForm.policyTitle}
                       onChange={(e) => setSettingsForm({ ...settingsForm, policyTitle: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="e.g. Counter Payment Model"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Custom Footer Copyright Line</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Custom Footer Copyright Line</label>
                     <input
                       type="text"
                       value={settingsForm.footerCopyright}
                       onChange={(e) => setSettingsForm({ ...settingsForm, footerCopyright: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="e.g. © 2026 The Pit Cafe. All rights reserved."
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Policy Details & Instructions for Diners</label>
+                  <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Policy Details & Instructions for Diners</label>
                   <textarea
                     value={settingsForm.policyText}
                     onChange={(e) => setSettingsForm({ ...settingsForm, policyText: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500 h-20"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500 h-20"
                     placeholder="Explain payment method, freshness pledge, and counter settle process..."
                   />
                 </div>
               </div>
 
               {/* SECTION 4: Location, Contact & Operating Hours */}
-              <div className="p-6 sm:p-7 rounded-3xl bg-darkSurface-card border border-darkSurface-border space-y-5 shadow-card">
-                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-800">
-                  <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold">
+              <div className="p-6 sm:p-7 rounded-2xl bg-white border border-zinc-200 space-y-6 shadow-sm">
+                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-100">
+                  <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
                     📍
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-base text-white">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
                       Location, Contact & Operating Hours
                     </h3>
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-zinc-500">
                       Ensure your customers can easily locate, call, and visit your cafe.
                     </p>
                   </div>
@@ -1913,23 +2314,23 @@ export default function AdminDashboardPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="sm:col-span-2">
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Street Address</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Street Address</label>
                     <input
                       type="text"
                       value={settingsForm.address}
                       onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="House 5/114, Sector 16, Rohini"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">City</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">City</label>
                     <input
                       type="text"
                       value={settingsForm.city}
                       onChange={(e) => setSettingsForm({ ...settingsForm, city: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="New Delhi"
                     />
                   </div>
@@ -1937,34 +2338,34 @@ export default function AdminDashboardPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Pincode</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Pincode</label>
                     <input
                       type="text"
                       value={settingsForm.pincode}
                       onChange={(e) => setSettingsForm({ ...settingsForm, pincode: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="110089"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Phone Number</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Phone Number</label>
                     <input
                       type="text"
                       value={settingsForm.phone}
                       onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="+91 98765 43210"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Email Address</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Email Address</label>
                     <input
                       type="email"
                       value={settingsForm.email}
                       onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="contact@thepitcafe.in"
                     />
                   </div>
@@ -1972,23 +2373,23 @@ export default function AdminDashboardPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Opening Hours</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Opening Hours</label>
                     <input
                       type="text"
                       value={settingsForm.openingHours}
                       onChange={(e) => setSettingsForm({ ...settingsForm, openingHours: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="8:00 AM - 11:00 PM"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Google Maps Link URL</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Google Maps Link URL</label>
                     <input
                       type="text"
                       value={settingsForm.googleMapsUrl}
                       onChange={(e) => setSettingsForm({ ...settingsForm, googleMapsUrl: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500 font-mono text-[11px]"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500 font-mono text-[11px]"
                       placeholder="https://maps.google.com/?q=..."
                     />
                   </div>
@@ -1996,16 +2397,16 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* SECTION 5: Social Media Channels */}
-              <div className="p-6 sm:p-7 rounded-3xl bg-darkSurface-card border border-darkSurface-border space-y-5 shadow-card">
-                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-800">
-                  <div className="w-8 h-8 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center font-bold">
+              <div className="p-6 sm:p-7 rounded-2xl bg-white border border-zinc-200 space-y-6 shadow-sm">
+                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-100">
+                  <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center font-bold">
                     🌐
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-base text-white">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
                       Social Media & Community Channels
                     </h3>
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-zinc-500">
                       These links populate the social badges in your footer and customer menus.
                     </p>
                   </div>
@@ -2013,34 +2414,34 @@ export default function AdminDashboardPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Instagram URL</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Instagram URL</label>
                     <input
                       type="text"
                       value={settingsForm.instagramUrl}
                       onChange={(e) => setSettingsForm({ ...settingsForm, instagramUrl: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="https://instagram.com/thepitcafe"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Facebook URL</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Facebook URL</label>
                     <input
                       type="text"
                       value={settingsForm.facebookUrl}
                       onChange={(e) => setSettingsForm({ ...settingsForm, facebookUrl: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="https://facebook.com/thepitcafe"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">WhatsApp Chat URL / Number</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">WhatsApp Chat URL / Number</label>
                     <input
                       type="text"
                       value={settingsForm.whatsappUrl}
                       onChange={(e) => setSettingsForm({ ...settingsForm, whatsappUrl: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="https://wa.me/919876543210"
                     />
                   </div>
@@ -2048,23 +2449,23 @@ export default function AdminDashboardPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">YouTube URL</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">YouTube URL</label>
                     <input
                       type="text"
                       value={settingsForm.youtubeUrl}
                       onChange={(e) => setSettingsForm({ ...settingsForm, youtubeUrl: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="https://youtube.com/@thepitcafe"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">X / Twitter URL</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">X / Twitter URL</label>
                     <input
                       type="text"
                       value={settingsForm.twitterUrl}
                       onChange={(e) => setSettingsForm({ ...settingsForm, twitterUrl: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="https://twitter.com/thepitcafe"
                     />
                   </div>
@@ -2072,62 +2473,62 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* SECTION 6: Operational Modes & Financial Rules */}
-              <div className="p-6 sm:p-7 rounded-3xl bg-darkSurface-card border border-darkSurface-border space-y-5 shadow-card">
-                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-800">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
+              <div className="p-6 sm:p-7 rounded-2xl bg-white border border-zinc-200 space-y-6 shadow-sm">
+                <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-100">
+                  <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
                     ⚙️
                   </div>
                   <div>
-                    <h3 className="font-display font-bold text-base text-white">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
                       Operations, Taxes & Table Greetings
                     </h3>
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-zinc-500">
                       Enable or pause ordering channels, configure GST, and customize table QR greetings.
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <label className="flex items-center gap-2 p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs cursor-pointer hover:border-zinc-700 transition-colors">
+                  <label className="flex items-center gap-2 p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs cursor-pointer hover:bg-zinc-100 transition-colors">
                     <input
                       type="checkbox"
                       checked={settingsForm.dineInEnabled}
                       onChange={(e) => setSettingsForm({ ...settingsForm, dineInEnabled: e.target.checked })}
-                      className="rounded text-brand-500 focus:ring-brand-500"
+                      className="rounded text-red-600 focus:ring-red-500"
                     />
-                    <span className="font-medium text-zinc-200">Dine-In QR Ordering</span>
+                    <span className="font-semibold text-zinc-800">Dine-In QR Ordering</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs cursor-pointer hover:border-zinc-700 transition-colors">
+                  <label className="flex items-center gap-2 p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs cursor-pointer hover:bg-zinc-100 transition-colors">
                     <input
                       type="checkbox"
                       checked={settingsForm.takeawayEnabled}
                       onChange={(e) => setSettingsForm({ ...settingsForm, takeawayEnabled: e.target.checked })}
-                      className="rounded text-brand-500 focus:ring-brand-500"
+                      className="rounded text-red-600 focus:ring-red-500"
                     />
-                    <span className="font-medium text-zinc-200">Takeaway Orders</span>
+                    <span className="font-semibold text-zinc-800">Takeaway Orders</span>
                   </label>
 
-                  <label className="flex items-center gap-2 p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs cursor-pointer hover:border-zinc-700 transition-colors">
+                  <label className="flex items-center gap-2 p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs cursor-pointer hover:bg-zinc-100 transition-colors">
                     <input
                       type="checkbox"
                       checked={settingsForm.reservationsEnabled}
                       onChange={(e) => setSettingsForm({ ...settingsForm, reservationsEnabled: e.target.checked })}
-                      className="rounded text-brand-500 focus:ring-brand-500"
+                      className="rounded text-red-600 focus:ring-red-500"
                     />
-                    <span className="font-medium text-zinc-200">Table Reservations</span>
+                    <span className="font-semibold text-zinc-800">Table Reservations</span>
                   </label>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800 space-y-3">
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-3">
                   <label className="flex items-center gap-2.5 text-xs cursor-pointer">
                     <input
                       type="checkbox"
                       checked={settingsForm.maintenanceMode}
                       onChange={(e) => setSettingsForm({ ...settingsForm, maintenanceMode: e.target.checked })}
-                      className="rounded text-brand-500 focus:ring-brand-500"
+                      className="rounded text-red-600 focus:ring-red-500"
                     />
-                    <span className="text-amberGold font-bold">
+                    <span className="text-amber-900 font-bold">
                       Emergency Kitchen Pause / Maintenance Mode
                     </span>
                   </label>
@@ -2136,7 +2537,7 @@ export default function AdminDashboardPage() {
                       type="text"
                       value={settingsForm.maintenanceNotice}
                       onChange={(e) => setSettingsForm({ ...settingsForm, maintenanceNotice: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-amber-500/40 text-xs text-white focus:outline-none"
+                      className="w-full px-3.5 py-2 rounded-xl bg-white border border-amber-300 text-xs text-zinc-900 focus:outline-none"
                       placeholder="e.g. Kitchen is running at maximum capacity. We'll reopen orders at 8 PM."
                     />
                   )}
@@ -2144,23 +2545,23 @@ export default function AdminDashboardPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">Tax / GST Percentage (%)</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">Tax / GST Percentage (%)</label>
                     <input
                       type="number"
                       step="0.1"
                       value={settingsForm.taxPercentage}
                       onChange={(e) => setSettingsForm({ ...settingsForm, taxPercentage: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-zinc-300 block mb-1.5">QR Greeting Heading</label>
+                    <label className="text-xs font-semibold text-zinc-700 block mb-1.5">QR Greeting Heading</label>
                     <input
                       type="text"
                       value={settingsForm.welcomeGreetingHeading}
                       onChange={(e) => setSettingsForm({ ...settingsForm, welcomeGreetingHeading: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-red-500"
                       placeholder="Welcome to The Pit Cafe"
                     />
                   </div>
@@ -2168,15 +2569,15 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Save & Feedback Toolbar */}
-              <div className="sticky bottom-6 z-30 p-4 rounded-2xl bg-zinc-900/95 border border-zinc-700/80 backdrop-blur-xl shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="sticky bottom-6 z-30 p-4 rounded-2xl bg-white/95 border border-zinc-200 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2 text-xs">
                   {settingsSavedNotice ? (
-                    <span className="text-emerald-400 font-bold flex items-center gap-1.5 animate-pulse">
+                    <span className="text-emerald-600 font-bold flex items-center gap-1.5 animate-pulse">
                       <Check className="w-4 h-4" />
                       All changes saved and active across the website!
                     </span>
                   ) : (
-                    <span className="text-zinc-400">
+                    <span className="text-zinc-500">
                       Changes update customer-facing pages, QR codes, and footers in real-time.
                     </span>
                   )}
@@ -2185,7 +2586,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <button
                     type="submit"
-                    className="w-full sm:w-auto py-3 px-8 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 hover:brightness-110 active:scale-95 text-white font-bold text-xs shadow-glow transition-all flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto py-3 px-8 rounded-xl bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2"
                   >
                     <Check className="w-4 h-4" />
                     <span>Save All Changes</span>

@@ -140,7 +140,7 @@ export function Hero({ restaurant }: HeroProps) {
           <div className="lg:col-span-6">
             <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-950 group">
               <img
-                src="/images/pit-cafe-courtyard.jpg"
+                src={restaurant.heroImageUrl || '/images/pit-cafe-front-view.jpg'}
                 alt="The Pit Cafe Night Front Rohini"
                 className="w-full h-[320px] sm:h-[400px] lg:h-[440px] object-cover object-center transform group-hover:scale-102 transition-transform duration-700"
               />

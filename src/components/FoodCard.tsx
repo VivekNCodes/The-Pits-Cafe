@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Clock, Plus, Sparkles, Flame, Check } from 'lucide-react';
-import { CustomizationModal } from './CustomizationModal';
+import { Plus, Check, Sparkles, Flame, Clock } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { FoodDetailModal } from './FoodDetailModal';
 
 export interface FoodCardItem {
   id: string;
@@ -35,151 +35,111 @@ export function FoodCard({ item }: { item: FoodCardItem }) {
   const [addedEffect, setAddedEffect] = useState(false);
   const { addItem } = useCart();
 
-  const hasCustomizations = item.addonGroups && item.addonGroups.length > 0;
-
-  const handleAddClick = () => {
+  const handleQuickAdd = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!item.isAvailable) return;
 
-    if (hasCustomizations) {
-      setModalOpen(true);
-    } else {
-      addItem({
-        foodItemId: item.id,
-        name: item.name,
-        price: item.price,
-        imageUrl: item.imageUrl || undefined,
-        isVeg: item.isVeg,
-        quantity: 1,
-        selectedAddons: [],
-      });
-      setAddedEffect(true);
-      setTimeout(() => setAddedEffect(false), 900);
-    }
+    addItem({
+      foodItemId: item.id,
+      name: item.name,
+      price: item.price,
+      imageUrl: item.imageUrl || undefined,
+      isVeg: item.isVeg,
+      quantity: 1,
+      selectedAddons: [],
+    });
+
+    setAddedEffect(true);
+    setTimeout(() => setAddedEffect(false), 900);
   };
 
   return (
     <>
-      <div className={`group relative rounded-2xl bg-darkSurface-card border border-darkSurface-border card-hover flex flex-col justify-between overflow-hidden transition-all duration-300 ${!item.isAvailable ? 'opacity-60 grayscale-[30%]' : ''}`}>
-        {/* Image Container */}
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-900">
-          {item.imageUrl ? (
-            <img
-              src={item.imageUrl}
-              alt={item.name}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-500 text-xs">
-              Freshly Prepared
-            </div>
-          )}
+      <div
+        onClick={() => setModalOpen(true)}
+        className={`group relative rounded-2xl bg-white border border-zinc-200/90 shadow-sm hover:shadow-xl hover:border-red-500/30 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer ${
+          !item.isAvailable ? 'opacity-50 grayscale' : ''
+        }`}
+      >
+        {/* Top Image Container matching Screen 2 */}
+        <div className="relative aspect-[16/11] w-full overflow-hidden bg-zinc-100 flex-shrink-0">
+          <img
+            src={item.imageUrl || '/images/pit-monster-burger.jpg'}
+            alt={item.name}
+            className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+          />
 
-          {/* Dark gradient vignette */}
-          <div className="absolute inset-0 bg-gradient-to-t from-darkSurface-card via-transparent to-transparent opacity-80" />
-
-          {/* Badges Overlay */}
-          <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5 z-10">
-            {/* Veg / Non-Veg Indicator */}
-            <span
-              className={`inline-flex items-center justify-center w-5 h-5 rounded-md bg-black/60 backdrop-blur-md border ${
-                item.isVeg ? 'border-emerald-500' : 'border-rose-500'
-              }`}
-              title={item.isVeg ? 'Pure Vegetarian' : 'Non-Vegetarian'}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  item.isVeg ? 'bg-emerald-400' : 'bg-rose-400'
-                }`}
-              />
-            </span>
-
-            {/* Bestseller Badge */}
+          {/* Badge Overlays matching Screen 2 */}
+          <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5 z-10 pointer-events-none">
             {item.isBestseller && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amberGold/20 text-amberGold border border-amberGold/30 backdrop-blur-md">
-                <Sparkles className="w-2.5 h-2.5" />
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-600 text-white shadow-md">
                 Bestseller
               </span>
             )}
-
-            {/* Spicy Badge */}
             {item.isSpicy && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/20 text-red-400 border border-red-500/30 backdrop-blur-md">
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white shadow-md">
                 <Flame className="w-2.5 h-2.5" />
                 Spicy
               </span>
             )}
           </div>
 
-          {/* Prep time badge */}
-          <div className="absolute bottom-2.5 left-2.5 z-10">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-black/70 text-zinc-300 backdrop-blur-md border border-white/10">
-              <Clock className="w-3 h-3 text-brand-400" />
-              {item.preparationTime} mins
+          {/* Veg / Non-Veg Indicator */}
+          <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
+            <span
+              className={`inline-flex items-center justify-center w-5 h-5 rounded-md bg-white/90 backdrop-blur-md border shadow-sm ${
+                item.isVeg ? 'border-emerald-600' : 'border-red-600'
+              }`}
+              title={item.isVeg ? 'Vegetarian' : 'Non-Vegetarian'}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  item.isVeg ? 'bg-emerald-600' : 'bg-red-600'
+                }`}
+              />
             </span>
           </div>
-
-          {/* Sold out overlay */}
-          {!item.isAvailable && (
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-20">
-              <span className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-semibold uppercase tracking-wider">
-                Sold Out Today
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* Content Body */}
-        <div className="p-4 flex-1 flex flex-col justify-between">
+        {/* Card Body */}
+        <div className="p-4 flex-1 flex flex-col justify-between text-left">
           <div>
-            <div className="flex items-start justify-between gap-2 mb-1.5">
-              <h3 className="font-display font-semibold text-base text-zinc-100 group-hover:text-brand-400 transition-colors leading-snug">
-                {item.name}
-              </h3>
-            </div>
-
-            {item.description && (
-              <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed mb-3">
-                {item.description}
-              </p>
-            )}
-
-            {item.allergens && (
-              <p className="text-[10px] text-zinc-500 mb-3">
-                Contains: <span className="text-zinc-400">{item.allergens}</span>
-              </p>
-            )}
+            <h3 className="font-display font-bold text-base text-zinc-900 group-hover:text-red-600 transition-colors line-clamp-1">
+              {item.name}
+            </h3>
+            <p className="text-[12px] text-zinc-500 line-clamp-2 mt-1 leading-snug">
+              {item.description || 'Prepared fresh with signature ingredients and spices.'}
+            </p>
           </div>
 
-          {/* Price & Add Action */}
-          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60 mt-auto">
-            <div className="flex flex-col">
-              <span className="text-xs text-zinc-500 font-medium">Price</span>
-              <span className="font-display font-bold text-lg text-white">
-                ₹{item.price}
+          {/* Bottom Row: Price and Red "Add +" Button matching Screen 2 */}
+          <div className="flex items-center justify-between gap-2 mt-3 pt-2">
+            <div className="flex items-baseline gap-1">
+              <span className="font-display font-extrabold text-base sm:text-lg text-zinc-900">
+                ₹ {item.price}
               </span>
             </div>
 
             <button
-              onClick={handleAddClick}
+              type="button"
+              onClick={handleQuickAdd}
               disabled={!item.isAvailable}
-              className={`relative inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-medium text-xs transition-all active:scale-95 ${
-                !item.isAvailable
-                  ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
-                  : addedEffect
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shadow-sm ${
+                addedEffect
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-zinc-800 hover:bg-brand-600 text-zinc-200 hover:text-white border border-zinc-700/60 hover:border-brand-500 shadow-sm'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
               }`}
             >
               {addedEffect ? (
                 <>
                   <Check className="w-3.5 h-3.5" />
-                  Added
+                  <span>Added</span>
                 </>
               ) : (
                 <>
+                  <span>Add</span>
                   <Plus className="w-3.5 h-3.5" />
-                  {hasCustomizations ? 'Customize' : 'Add'}
                 </>
               )}
             </button>
@@ -187,14 +147,12 @@ export function FoodCard({ item }: { item: FoodCardItem }) {
         </div>
       </div>
 
-      {/* Customization Modal */}
-      {modalOpen && (
-        <CustomizationModal
-          item={item}
-          isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
-        />
-      )}
+      {/* Food Detail Modal (Screen 4) */}
+      <FoodDetailModal
+        item={item}
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+      />
     </>
   );
 }

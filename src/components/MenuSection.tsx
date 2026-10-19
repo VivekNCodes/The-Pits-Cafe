@@ -1,7 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Sparkles, Flame, X, Utensils } from 'lucide-react';
+import {
+  Search,
+  Sparkles,
+  Flame,
+  Utensils,
+  Pizza,
+  Coffee,
+  Sandwich,
+  Wine,
+  Layers,
+  ChevronRight,
+} from 'lucide-react';
 import { FoodCard, FoodCardItem } from './FoodCard';
 
 export interface CategoryWithItems {
@@ -20,11 +31,10 @@ interface MenuSectionProps {
 export function MenuSection({ restaurantSlug, initialCategories }: MenuSectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [dietaryFilter, setDietaryFilter] = useState<'all' | 'veg' | 'bestsellers' | 'spicy'>('all');
   const [searchResults, setSearchResults] = useState<FoodCardItem[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Debounced smart search
+  // Debounced search
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults(null);
@@ -54,166 +64,186 @@ export function MenuSection({ restaurantSlug, initialCategories }: MenuSectionPr
   // Extract all items across categories
   const allItems = initialCategories.flatMap((cat) => cat.foodItems);
 
-  // Apply filters
+  // Category matching
+  const categoryFilters = [
+    { id: 'all', label: 'All Items', shortLabel: 'All', icon: Layers },
+    { id: 'burgers', label: 'Burgers', shortLabel: 'Burgers', icon: Sandwich },
+    { id: 'pizzas', label: 'Pizzas', shortLabel: 'Pizzas', icon: Pizza },
+    { id: 'pasta', label: 'Pasta', shortLabel: 'Pasta', icon: Utensils },
+    { id: 'fries', label: 'Fries', shortLabel: 'Fries', icon: Utensils },
+    { id: 'beverages', label: 'Beverages', shortLabel: 'Beverages', icon: Coffee },
+    { id: 'bestsellers', label: 'Bestsellers', shortLabel: 'Bestsellers', icon: Sparkles },
+  ];
+
+  // Filter items
   let displayedItems: FoodCardItem[] = [];
 
   if (searchResults !== null) {
     displayedItems = searchResults;
   } else if (selectedCategory === 'all') {
     displayedItems = allItems;
+  } else if (selectedCategory === 'bestsellers') {
+    displayedItems = allItems.filter((i) => i.isBestseller);
   } else {
-    const matchedCategory = initialCategories.find((c) => c.slug === selectedCategory);
-    displayedItems = matchedCategory ? matchedCategory.foodItems : [];
-  }
-
-  // Dietary filter
-  if (dietaryFilter === 'veg') {
-    displayedItems = displayedItems.filter((i) => i.isVeg);
-  } else if (dietaryFilter === 'bestsellers') {
-    displayedItems = displayedItems.filter((i) => i.isBestseller);
-  } else if (dietaryFilter === 'spicy') {
-    displayedItems = displayedItems.filter((i) => i.isSpicy);
+    // Find category by slug or name substring
+    const matchedCategory = initialCategories.find(
+      (c) =>
+        c.slug.toLowerCase().includes(selectedCategory.toLowerCase()) ||
+        c.name.toLowerCase().includes(selectedCategory.toLowerCase())
+    );
+    if (matchedCategory) {
+      displayedItems = matchedCategory.foodItems;
+    } else {
+      // Fallback: search in allItems by name or description
+      displayedItems = allItems.filter(
+        (i) =>
+          i.name.toLowerCase().includes(selectedCategory.toLowerCase()) ||
+          (i.description && i.description.toLowerCase().includes(selectedCategory.toLowerCase()))
+      );
+    }
   }
 
   return (
-    <section id="menu" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Section Title */}
-      <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
-        <span className="text-xs uppercase tracking-widest font-semibold text-brand-400 mb-2 block">
-          Freshly Crafted For You
-        </span>
-        <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
-          Explore Our Menu
-        </h2>
-        <p className="text-xs sm:text-sm text-zinc-400 mt-2">
-          From fiery peri peri maggi to toasted gourmet artisan sandwiches and stone-oven pizzas.
-        </p>
+    <section id="menu" className="py-10 sm:py-16 bg-[#F8F9FA] text-zinc-900 border-b border-zinc-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Screen 2: OUR MENU Dark Banner Header */}
+        <div className="relative rounded-2xl sm:rounded-3xl bg-[#0F1015] text-white p-6 sm:p-10 mb-8 sm:mb-10 overflow-hidden shadow-xl border border-zinc-800">
+          {/* Ambient red glow */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/15 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
+            <div className="md:col-span-8 text-left space-y-2">
+              <h2 className="font-display font-black text-3xl sm:text-5xl tracking-tight uppercase">
+                OUR MENU
+              </h2>
+              <p className="text-zinc-300 text-sm sm:text-base font-medium">
+                Burgers, pizzas, pasta, fries and more.
+              </p>
+              <p className="text-zinc-400 text-xs sm:text-sm">
+                Good food for every kind of ride.
+              </p>
+            </div>
+
+            <div className="hidden md:flex md:col-span-4 justify-end">
+              <div className="relative w-44 h-28 rounded-2xl overflow-hidden border border-zinc-700/60 shadow-lg">
+                <img
+                  src="/images/loaded-fries.jpg"
+                  alt="Our Menu Specialties"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Top Filter Bar: Horizontal Category Pills + Search input */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+          
+          {/* Horizontal Pills matching Screen 2 */}
+          <div className="w-full md:w-auto flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+            {categoryFilters.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  setSelectedCategory(cat.id);
+                  setSearchQuery('');
+                }}
+                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                  selectedCategory === cat.id
+                    ? 'bg-red-600 text-white shadow-md shadow-red-600/20'
+                    : 'bg-white text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 border border-zinc-200'
+                }`}
+              >
+                {cat.shortLabel}
+              </button>
+            ))}
+          </div>
+
+          {/* Search Input matching Screen 2 */}
+          <div className="w-full md:w-72 relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="Search dishes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-zinc-200 text-xs sm:text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all shadow-sm"
+            />
+          </div>
+
+        </div>
+
+        {/* Main Content Area: Left Vertical Sidebar + Right Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Left Vertical Category Sidebar (Screen 2) */}
+          <div className="hidden lg:block lg:col-span-3 bg-white rounded-2xl border border-zinc-200/90 p-3 shadow-sm sticky top-24">
+            <div className="space-y-1">
+              {categoryFilters.map((cat) => {
+                const IconComponent = cat.icon;
+                const isActive = selectedCategory === cat.id;
+
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory(cat.id);
+                      setSearchQuery('');
+                    }}
+                    className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition-all ${
+                      isActive
+                        ? 'bg-red-50 text-red-600 border border-red-200/80 shadow-sm'
+                        : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <IconComponent
+                        className={`w-4 h-4 ${isActive ? 'text-red-600' : 'text-zinc-400'}`}
+                      />
+                      <span>{cat.label}</span>
+                    </div>
+                    {isActive && <ChevronRight className="w-4 h-4 text-red-600" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Column: Food Cards Grid */}
+          <div className="lg:col-span-9">
+            {displayedItems.length === 0 ? (
+              <div className="rounded-2xl bg-white border border-zinc-200 p-12 text-center">
+                <Utensils className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+                <h3 className="font-display font-bold text-lg text-zinc-900">No dishes found</h3>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Try checking another category or clearing your search term.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSearchQuery('');
+                  }}
+                  className="mt-4 px-4 py-2 rounded-xl bg-red-600 text-white text-xs font-bold shadow-md hover:bg-red-700 transition-colors"
+                >
+                  View All Items
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {displayedItems.map((item) => (
+                  <FoodCard key={item.id} item={item} />
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
+
       </div>
-
-      {/* Smart Search Bar with typo tolerance notice */}
-      <div className="max-w-xl mx-auto mb-8">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-          <input
-            type="text"
-            placeholder="Search dishes (e.g. 'panner toast', 'maggi', 'burger', 'cofee')..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-10 py-3.5 rounded-2xl bg-darkSurface-card border border-darkSurface-border text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-brand-500 shadow-lg"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-        {searchQuery && (
-          <p className="text-[11px] text-zinc-500 mt-1.5 px-2">
-            Tip: Smart fuzzy search active — spelling mistakes & aliases automatically resolved.
-          </p>
-        )}
-      </div>
-
-      {/* Dietary Quick Filter Pills */}
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-        <button
-          onClick={() => setDietaryFilter('all')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-            dietaryFilter === 'all'
-              ? 'bg-zinc-200 text-zinc-950 font-semibold shadow-sm'
-              : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
-          }`}
-        >
-          All Items
-        </button>
-        <button
-          onClick={() => setDietaryFilter('veg')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
-            dietaryFilter === 'veg'
-              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-semibold'
-              : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
-          }`}
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          Pure Veg
-        </button>
-        <button
-          onClick={() => setDietaryFilter('bestsellers')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
-            dietaryFilter === 'bestsellers'
-              ? 'bg-amberGold/20 text-amberGold border border-amberGold/40 font-semibold'
-              : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
-          }`}
-        >
-          <Sparkles className="w-3 h-3 text-amberGold" />
-          Bestsellers
-        </button>
-        <button
-          onClick={() => setDietaryFilter('spicy')}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
-            dietaryFilter === 'spicy'
-              ? 'bg-red-500/20 text-red-400 border border-red-500/40 font-semibold'
-              : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
-          }`}
-        >
-          <Flame className="w-3 h-3 text-red-400" />
-          Spicy Specials
-        </button>
-      </div>
-
-      {/* Category Pills (horizontal scrollable) */}
-      {!searchQuery && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar scroll-smooth">
-          <button
-            onClick={() => setSelectedCategory('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-              selectedCategory === 'all'
-                ? 'bg-brand-600 text-white shadow-glow'
-                : 'bg-zinc-900/80 text-zinc-300 hover:bg-zinc-800 border border-zinc-800'
-            }`}
-          >
-            All Categories ({allItems.length})
-          </button>
-          {initialCategories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.slug)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === cat.slug
-                  ? 'bg-brand-600 text-white shadow-glow'
-                  : 'bg-zinc-900/80 text-zinc-300 hover:bg-zinc-800 border border-zinc-800'
-              }`}
-            >
-              {cat.name} ({cat.foodItems.length})
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Food Items Grid */}
-      {isSearching ? (
-        <div className="py-20 text-center text-zinc-400">
-          <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs">Searching fresh menu items...</p>
-        </div>
-      ) : displayedItems.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl bg-zinc-900/40 border border-zinc-800/80 p-8">
-          <Utensils className="w-8 h-8 text-zinc-600 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-zinc-200">No dishes found</h3>
-          <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
-            We couldn't find any dishes matching "{searchQuery || dietaryFilter}". Try exploring another category or clearing filters.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
-          {displayedItems.map((item) => (
-            <FoodCard key={item.id} item={item} />
-          ))}
-        </div>
-      )}
     </section>
   );
 }

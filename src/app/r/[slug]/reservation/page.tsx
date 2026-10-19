@@ -8,10 +8,12 @@ import {
   Clock,
   Users,
   CheckCircle2,
-  AlertCircle,
-  ArrowLeft,
-  Utensils,
-  MapPin,
+  TreePine,
+  Home,
+  Sun,
+  ShieldCheck,
+  ArrowRight,
+  MessageSquare,
   Sparkles,
 } from 'lucide-react';
 import { Header } from '@/components/Header';
@@ -31,14 +33,14 @@ export default function ReservationPage() {
 
   const [restaurant, setRestaurant] = useState<any>(null);
   const [date, setDate] = useState(() => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
+    const today = new Date();
+    return today.toISOString().split('T')[0];
   });
-  const [time, setTime] = useState('19:30');
+  const [time, setTime] = useState('19:00');
   const [guests, setGuests] = useState(4);
+  const [seatingArea, setSeatingArea] = useState<'Outdoor' | 'Indoor' | 'Rooftop'>('Outdoor');
 
-  // Available tables state from server engine
+  // Available tables state
   const [availableTables, setAvailableTables] = useState<TableOption[]>([]);
   const [selectedTableId, setSelectedTableId] = useState<string>('');
   const [isCheckingTables, setIsCheckingTables] = useState(false);
@@ -46,15 +48,14 @@ export default function ReservationPage() {
   // Guest details form
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
   const [specialRequest, setSpecialRequest] = useState('');
 
-  // Booking result state
+  // Booking result
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // 1. Fetch restaurant info
+  // 1. Fetch restaurant
   useEffect(() => {
     async function loadRestaurant() {
       try {
@@ -70,7 +71,7 @@ export default function ReservationPage() {
     if (restaurantSlug) loadRestaurant();
   }, [restaurantSlug]);
 
-  // 2. Query available tables whenever Date, Time, or Guests change
+  // 2. Query available tables
   useEffect(() => {
     async function checkAvailability() {
       setIsCheckingTables(true);
@@ -81,9 +82,10 @@ export default function ReservationPage() {
         );
         if (res.ok) {
           const data = await res.json();
-          setAvailableTables(data.availableTables || []);
-          if (data.availableTables && data.availableTables.length > 0) {
-            setSelectedTableId(data.availableTables[0].id);
+          const tablesList: TableOption[] = data.availableTables || [];
+          setAvailableTables(tablesList);
+          if (tablesList.length > 0) {
+            setSelectedTableId(tablesList[0].id);
           } else {
             setSelectedTableId('');
           }
@@ -104,8 +106,8 @@ export default function ReservationPage() {
     e.preventDefault();
     setErrorMessage(null);
 
-    if (!selectedTableId) {
-      setErrorMessage('Please select an available table.');
+    if (!customerName.trim() || !customerPhone.trim()) {
+      setErrorMessage('Please enter your name and phone number.');
       return;
     }
 
@@ -115,14 +117,13 @@ export default function ReservationPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tableId: selectedTableId,
+          tableId: selectedTableId || (availableTables[0]?.id),
           customerName: customerName.trim(),
           customerPhone: customerPhone.trim(),
-          customerEmail: customerEmail.trim() || undefined,
           guestCount: guests,
           reservationDate: date,
           startTime: time,
-          specialRequest: specialRequest.trim() || undefined,
+          specialRequest: `${seatingArea} seating preferred. ${specialRequest.trim()}`,
         }),
       });
 
@@ -142,32 +143,27 @@ export default function ReservationPage() {
   const todayStr = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="min-h-screen flex flex-col bg-darkSurface-bg">
+    <div className="min-h-screen flex flex-col bg-[#0D0E12] text-white">
       {restaurant && <Header restaurant={restaurant} />}
 
-      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16 w-full">
+      <main className="flex-1 max-w-xl mx-auto px-4 py-10 sm:py-16 w-full">
         {confirmedBooking ? (
-          /* Confirmation Screen */
-          <div className="max-w-lg mx-auto p-6 sm:p-8 rounded-3xl bg-darkSurface-card border border-darkSurface-border shadow-2xl text-center space-y-6 animate-slide-up">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
+          /* Confirmation State */
+          <div className="p-6 sm:p-8 rounded-3xl bg-[#16181F] border border-zinc-800 shadow-2xl text-center space-y-6 animate-fade-in">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
               <CheckCircle2 className="w-8 h-8" />
             </div>
 
             <div>
-              <span className="text-xs uppercase tracking-widest font-semibold text-emerald-400">
+              <span className="text-xs uppercase tracking-widest font-bold text-emerald-400">
                 Reservation Confirmed
               </span>
               <h1 className="font-display font-extrabold text-2xl text-white mt-1">
-                We'll See You Soon, {confirmedBooking.customerName}!
+                Spot Reserved for {confirmedBooking.customerName}!
               </h1>
             </div>
 
-            {/* Reservation Summary */}
-            <div className="p-4 rounded-2xl bg-zinc-900/80 border border-zinc-800 text-left space-y-2.5 text-xs text-zinc-300">
-              <div className="flex justify-between">
-                <span className="text-zinc-500">Restaurant:</span>
-                <span className="font-semibold text-white">{restaurant?.name}</span>
-              </div>
+            <div className="p-4 rounded-2xl bg-[#0D0E12] border border-zinc-800 text-left space-y-2.5 text-xs text-zinc-300">
               <div className="flex justify-between">
                 <span className="text-zinc-500">Date & Slot:</span>
                 <span className="font-semibold text-white">
@@ -175,26 +171,25 @@ export default function ReservationPage() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-500">Assigned Table:</span>
-                <span className="font-semibold text-brand-400">
-                  {confirmedBooking.table?.tableNumber} ({confirmedBooking.table?.location})
-                </span>
+                <span className="text-zinc-500">Seating Area:</span>
+                <span className="font-semibold text-red-400">{seatingArea} Area</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-500">Guest Count:</span>
+                <span className="text-zinc-500">Party Size:</span>
                 <span className="font-semibold text-white">{confirmedBooking.guestCount} Guests</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-500">Status:</span>
-                <span className="font-bold text-emerald-400">CONFIRMED</span>
+                <span className="text-zinc-500">Table:</span>
+                <span className="font-bold text-white">
+                  {confirmedBooking.table?.tableNumber || 'Assigned on arrival'}
+                </span>
               </div>
             </div>
 
-            {/* QR Connection Instruction (Section 33) */}
-            <div className="p-4 rounded-2xl bg-amberGold/10 border border-amberGold/30 text-left flex items-start gap-3">
-              <Sparkles className="w-4 h-4 text-amberGold flex-shrink-0 mt-0.5" />
+            <div className="p-4 rounded-2xl bg-red-600/10 border border-red-500/30 text-left flex items-start gap-3">
+              <Sparkles className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-zinc-300 leading-relaxed">
-                <strong>Arrival Tip:</strong> When you arrive at {confirmedBooking.table?.tableNumber}, simply scan the table's QR code. The system will recognize your booking and activate your dine-in ordering session!
+                <strong>Instant Confirmation Sent:</strong> Details have been logged. When you arrive, just mention your name or phone number at the counter!
               </p>
             </div>
 
@@ -203,209 +198,226 @@ export default function ReservationPage() {
                 href={`/r/${restaurantSlug}`}
                 className="px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition-colors"
               >
-                Back to Restaurant
+                Back to Home
               </Link>
               <Link
                 href={`/r/${restaurantSlug}#menu`}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 text-white font-semibold text-xs shadow-glow transition-transform hover:scale-105"
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-xs shadow-lg transition-transform hover:scale-105"
               >
-                Browse Menu
+                Explore Menu
               </Link>
             </div>
           </div>
         ) : (
-          /* Booking Form */
-          <div className="space-y-8">
-            <div className="text-center max-w-xl mx-auto space-y-2">
-              <span className="text-xs uppercase tracking-widest font-semibold text-brand-400">
-                Guaranteed Seating
-              </span>
-              <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-white">
-                Reserve Your Table
+          /* Screen 3: RESERVE A TABLE Form Card */
+          <div className="space-y-6">
+            
+            {/* Heading and Subtitle matching Screen 3 */}
+            <div className="text-center space-y-2">
+              <h1 className="font-display font-black text-2xl sm:text-3xl text-white tracking-wider uppercase">
+                RESERVE A TABLE
               </h1>
-              <p className="text-xs sm:text-sm text-zinc-400">
-                Select your preferred date, time, and table location. Our server engine verifies availability in real time.
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                Good food tastes better together. Book your spot and enjoy the perfect pit stop.
               </p>
             </div>
 
+            {/* Form Card */}
             <form
               onSubmit={handleBookingSubmit}
-              className="p-6 sm:p-8 rounded-3xl bg-darkSurface-card border border-darkSurface-border shadow-2xl space-y-6"
+              className="p-6 sm:p-8 rounded-3xl bg-[#16181F] border border-zinc-800 shadow-2xl space-y-4"
             >
-              {/* Step 1: Date, Time & Guests */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Row 1: Date & Time */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1.5 flex items-center gap-1.5">
-                    <CalendarIcon className="w-3.5 h-3.5 text-brand-400" />
+                  <label className="text-xs font-semibold text-zinc-300 block mb-1">
                     Date
                   </label>
-                  <input
-                    type="date"
-                    min={todayStr}
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type="date"
+                      min={todayStr}
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0E12] border border-zinc-700/80 text-xs text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1.5 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-brand-400" />
-                    Time Slot
+                  <label className="text-xs font-semibold text-zinc-300 block mb-1">
+                    Time
                   </label>
-                  <select
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
-                  >
-                    <option value="12:00">12:00 PM (Lunch)</option>
-                    <option value="13:00">1:00 PM (Lunch)</option>
-                    <option value="14:00">2:00 PM (Lunch)</option>
-                    <option value="17:00">5:00 PM (High Tea)</option>
-                    <option value="18:30">6:30 PM (Evening)</option>
-                    <option value="19:30">7:30 PM (Dinner)</option>
-                    <option value="20:30">8:30 PM (Dinner)</option>
-                    <option value="21:30">9:30 PM (Late Dinner)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-zinc-300 block mb-1.5 flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-brand-400" />
-                    Number of Guests
-                  </label>
-                  <select
-                    value={guests}
-                    onChange={(e) => setGuests(parseInt(e.target.value, 10))}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-brand-500"
-                  >
-                    <option value={1}>1 Guest</option>
-                    <option value={2}>2 Guests</option>
-                    <option value={4}>4 Guests</option>
-                    <option value={6}>6 Guests</option>
-                    <option value={8}>8+ Group Dining</option>
-                  </select>
+                  <div className="relative">
+                    <input
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0E12] border border-zinc-700/80 text-xs text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Step 2: Available Tables Section (Section 30, 32, 50) */}
-              <div className="pt-4 border-t border-zinc-800/80 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                    Available Tables ({availableTables.length})
-                  </span>
-                  {isCheckingTables && (
-                    <span className="text-[11px] text-brand-400 animate-pulse">
-                      Checking availability...
-                    </span>
-                  )}
-                </div>
-
-                {availableTables.length === 0 ? (
-                  <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-center text-xs text-zinc-400">
-                    No tables available for {guests} guests at {time} on this date. Please try a different slot.
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {availableTables.map((t) => (
-                      <label
-                        key={t.id}
-                        className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                          selectedTableId === t.id
-                            ? 'bg-brand-500/10 border-brand-500 text-white shadow-sm'
-                            : 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:border-zinc-700'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="tableOption"
-                          value={t.id}
-                          checked={selectedTableId === t.id}
-                          onChange={() => setSelectedTableId(t.id)}
-                          className="mt-1 text-brand-500 focus:ring-brand-500"
-                        />
-                        <div>
-                          <p className="font-bold text-xs text-zinc-100">
-                            {t.tableNumber}
-                          </p>
-                          <p className="text-[11px] text-zinc-400">{t.location}</p>
-                          <p className="text-[10px] text-brand-400 mt-1">
-                            Fits up to {t.capacity} guests
-                          </p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                )}
+              {/* Row 2: Guests Dropdown */}
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1">
+                  Guests
+                </label>
+                <select
+                  value={guests}
+                  onChange={(e) => setGuests(parseInt(e.target.value, 10))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0E12] border border-zinc-700/80 text-xs text-white focus:outline-none focus:ring-2 focus:ring-red-600 cursor-pointer"
+                >
+                  <option value={1}>1 Person</option>
+                  <option value={2}>2 People</option>
+                  <option value={3}>3 People</option>
+                  <option value={4}>4 People</option>
+                  <option value={6}>6 People</option>
+                  <option value={8}>8 People</option>
+                  <option value={10}>10+ People (Biker Group)</option>
+                </select>
               </div>
 
-              {/* Step 3: Guest Information */}
-              <div className="pt-4 border-t border-zinc-800/80 space-y-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300 block">
-                  Guest Contact Details
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Your Full Name"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-brand-500"
-                    required
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Phone Number (e.g. +91 98765 43210)"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-brand-500"
-                    required
-                  />
+              {/* Row 3: Seating Area Pills (Outdoor, Indoor, Rooftop) */}
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1.5">
+                  Seating Area
+                </label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setSeatingArea('Outdoor')}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      seatingArea === 'Outdoor'
+                        ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
+                        : 'bg-[#0D0E12] text-zinc-400 hover:text-white border border-zinc-800'
+                    }`}
+                  >
+                    <TreePine className="w-3.5 h-3.5" />
+                    <span>Outdoor</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSeatingArea('Indoor')}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      seatingArea === 'Indoor'
+                        ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
+                        : 'bg-[#0D0E12] text-zinc-400 hover:text-white border border-zinc-800'
+                    }`}
+                  >
+                    <Home className="w-3.5 h-3.5" />
+                    <span>Indoor</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSeatingArea('Rooftop')}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      seatingArea === 'Rooftop'
+                        ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
+                        : 'bg-[#0D0E12] text-zinc-400 hover:text-white border border-zinc-800'
+                    }`}
+                  >
+                    <Sun className="w-3.5 h-3.5" />
+                    <span>Rooftop</span>
+                  </button>
                 </div>
-                <input
-                  type="email"
-                  placeholder="Email Address (Optional, for confirmation note)"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-brand-500"
-                />
+              </div>
+
+              {/* Row 4: Name */}
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1">
+                  Name
+                </label>
                 <input
                   type="text"
-                  placeholder="Special requests (e.g. high chair, anniversary celebration, quieter corner)"
+                  required
+                  placeholder="Your Name"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0E12] border border-zinc-700/80 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-600"
+                />
+              </div>
+
+              {/* Row 5: Phone Number */}
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="+91 98765 43210"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0E12] border border-zinc-700/80 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-600"
+                />
+              </div>
+
+              {/* Row 6: Special Requests (Optional) */}
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1">
+                  Special Requests (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Birthday, special occasion..."
                   value={specialRequest}
                   onChange={(e) => setSpecialRequest(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-brand-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0E12] border border-zinc-700/80 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-600"
                 />
               </div>
 
               {errorMessage && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>{errorMessage}</span>
+                <div className="p-3 rounded-xl bg-red-600/15 border border-red-500/40 text-red-400 text-xs font-semibold">
+                  {errorMessage}
                 </div>
               )}
 
-              {/* Submit Button */}
+              {/* Red Action Button matching Screen 3 */}
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={isSubmitting || availableTables.length === 0}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-brand-600 via-brand-500 to-amberGold text-white font-semibold text-sm shadow-glow hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 active:scale-95 disabled:opacity-50 text-white font-bold text-sm shadow-lg shadow-red-600/30 hover:shadow-red-600/50 transition-all flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
-                    <span>Confirming Table...</span>
+                    <span>Checking Availability...</span>
                   ) : (
-                    <span>Confirm Table Reservation</span>
+                    <>
+                      <span>Check Availability</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
                   )}
                 </button>
               </div>
+
+              {/* Bottom notification badge matching Screen 3 */}
+              <div className="pt-3 border-t border-zinc-800/80 flex items-center gap-3 text-left">
+                <div className="w-8 h-8 rounded-lg bg-zinc-800 text-red-500 flex items-center justify-center flex-shrink-0">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white">
+                    Instant confirmation
+                  </p>
+                  <p className="text-[11px] text-zinc-400">
+                    You&apos;ll receive a confirmation on WhatsApp/SMS.
+                  </p>
+                </div>
+              </div>
+
             </form>
+
           </div>
         )}
       </main>
 
-      {restaurant && <Footer restaurant={restaurant} />}
+      <Footer restaurant={restaurant} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 // Master Prisma Schema for Multi-Tenant Restaurant & Cafe Digital Experience Platform
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

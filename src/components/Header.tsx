@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingBag, Utensils, Calendar, Clock, Menu as MenuIcon, X, Phone, Flame } from 'lucide-react';
+import { ShoppingBag, Utensils, Calendar, Clock, Menu as MenuIcon, X, Phone } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { PitCafeLogo } from './PitCafeLogo';
 
 interface HeaderProps {
   restaurant: {
@@ -22,154 +23,181 @@ export function Header({ restaurant }: HeaderProps) {
   const totalQuantity = items.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#0c0d10]/90 backdrop-blur-xl border-b border-zinc-800/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+    <header className="sticky top-0 z-40 w-full bg-[#0d0e12]/95 backdrop-blur-xl border-b border-zinc-800/80 transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
         {/* Brand & Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 p-[2px] shadow-lg shadow-orange-500/20 flex-shrink-0 transition-transform group-hover:scale-105">
-            <div className="w-full h-full rounded-[14px] bg-zinc-950 flex items-center justify-center overflow-hidden">
-              {restaurant.logoUrl ? (
-                <img
-                  src={restaurant.logoUrl}
-                  alt={restaurant.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Flame className="w-5 h-5 text-amber-400" />
-              )}
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-display font-black text-lg sm:text-xl tracking-tight text-white group-hover:text-amber-400 transition-colors uppercase">
-                {restaurant.name}
-              </span>
-              {/* Dynamic Seated Table Badge if QR Session is Active */}
-              {tableContext && (
-                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  Table {tableContext.tableNumber}
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] text-zinc-400 hidden sm:block truncate max-w-[280px]">
-              Sector 16, Rohini · Open till 5:00 AM
-            </p>
-          </div>
-        </Link>
+        <PitCafeLogo href="/" />
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
+        {/* Desktop Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-7 text-[13px] font-semibold tracking-wide text-zinc-300">
           <Link
-            href="#menu"
-            className="text-zinc-300 hover:text-amber-400 transition-colors flex items-center gap-1.5"
+            href="/"
+            className="hover:text-red-500 transition-colors"
           >
-            <Utensils className="w-4 h-4" />
-            <span>Digital Menu</span>
+            Home
           </Link>
           <Link
-            href="#story"
-            className="text-zinc-300 hover:text-amber-400 transition-colors flex items-center gap-1.5"
+            href="#menu"
+            className="hover:text-red-500 transition-colors"
           >
-            <span>Our Story</span>
+            Menu
           </Link>
           <Link
             href={`/r/${restaurant.slug}/reservation`}
-            className="text-zinc-300 hover:text-amber-400 transition-colors flex items-center gap-1.5"
+            className="hover:text-red-500 transition-colors"
           >
-            <Calendar className="w-4 h-4" />
-            <span>Book Table</span>
+            Reservations
           </Link>
           <Link
-            href={`/r/${restaurant.slug}/history`}
-            className="text-zinc-300 hover:text-amber-400 transition-colors flex items-center gap-1.5"
+            href="#story"
+            className="hover:text-red-500 transition-colors"
           >
-            <Clock className="w-4 h-4" />
-            <span>Track Order</span>
+            Our Story
+          </Link>
+          <Link
+            href="#gallery"
+            className="hover:text-red-500 transition-colors"
+          >
+            Gallery
+          </Link>
+          <Link
+            href="#contact"
+            className="hover:text-red-500 transition-colors"
+          >
+            Contact
           </Link>
         </nav>
 
-        {/* Actions: Table Badge (Mobile) + Direct Phone + Cart Button */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        {/* Right Action Items: Status Pill + Order Now Button */}
+        <div className="flex items-center gap-3">
+          {/* Status Pill: "Open Now 10 AM - 5 AM" */}
+          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-700/60 text-xs font-medium text-zinc-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-zinc-100 font-semibold">Open Now</span>
+            <span className="text-zinc-500 text-[11px]">10 AM - 5 AM</span>
+          </div>
+
+          {/* Table QR Active Badge */}
           {tableContext && (
-            <span className="sm:hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              {tableContext.tableNumber}
+              Table {tableContext.tableNumber}
             </span>
           )}
 
-          {/* Quick Call Button */}
-          <a
-            href="tel:+919717780445"
-            className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 hover:text-white hover:border-amber-500/50 transition-colors"
-            title="Call Cafe"
-          >
-            <Phone className="w-3.5 h-3.5 text-emerald-400" />
-            <span>+91 97177 80445</span>
-          </a>
-
-          {/* Trigger Cart Drawer */}
+          {/* Primary CTA: Order Now (Red Pill Button) */}
           <button
-            onClick={() => setIsCartOpen(true)}
-            className="relative flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/20 hover:brightness-110 active:scale-95 transition-all"
-            aria-label="View shopping cart"
+            onClick={() => {
+              if (totalQuantity > 0) {
+                setIsCartOpen(true);
+              } else {
+                const el = document.getElementById('menu');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  setIsCartOpen(true);
+                }
+              }
+            }}
+            className="relative flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-red-600/30 hover:shadow-red-600/50 active:scale-95 transition-all"
+            aria-label="Order food"
           >
-            <ShoppingBag className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              {totalQuantity > 0 ? `₹${billSummary.totalAmount}` : 'Cart'}
-            </span>
+            <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>Order Now</span>
             {totalQuantity > 0 && (
-              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-black/40 text-[11px] font-bold">
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-black/40 text-[11px] font-bold text-white ml-0.5">
                 {totalQuantity}
               </span>
             )}
           </button>
 
-          {/* Mobile hamburger toggle */}
+          {/* Mobile Menu Hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800"
-            aria-label="Toggle Navigation Menu"
+            className="lg:hidden p-2 rounded-xl text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
+            aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-zinc-800/80 bg-zinc-950/98 backdrop-blur-xl px-4 py-4 space-y-3 animate-slide-up">
-          <Link
-            href={`/r/${restaurant.slug}#menu`}
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900"
-          >
-            <Utensils className="w-4 h-4 text-amber-400" />
-            Digital Menu
-          </Link>
-          <Link
-            href={`/r/${restaurant.slug}/reservation`}
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900"
-          >
-            <Calendar className="w-4 h-4 text-amber-400" />
-            Book a Courtyard Table
-          </Link>
-          <Link
-            href={`/r/${restaurant.slug}/history`}
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-200 hover:bg-zinc-900"
-          >
-            <Clock className="w-4 h-4 text-amber-400" />
-            Order Status & History
-          </Link>
-          <a
-            href="tel:+919717780445"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
-          >
-            <Phone className="w-4 h-4" />
-            Call: +91 97177 80445
-          </a>
+        <div className="lg:hidden border-t border-zinc-800/80 bg-zinc-950/98 backdrop-blur-2xl px-5 py-5 space-y-3 animate-slide-up shadow-2xl">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+            <div className="flex items-center gap-2 text-xs text-zinc-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="font-semibold text-white">Open Now</span>
+              <span className="text-zinc-500">10 AM - 5 AM</span>
+            </div>
+            {tableContext && (
+              <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                Table {tableContext.tableNumber}
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <Link
+              href="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-xl text-sm font-medium text-zinc-200 bg-zinc-900/60 hover:bg-zinc-800 flex items-center gap-2"
+            >
+              Home
+            </Link>
+            <Link
+              href="#menu"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-xl text-sm font-medium text-zinc-200 bg-zinc-900/60 hover:bg-zinc-800 flex items-center gap-2"
+            >
+              <Utensils className="w-3.5 h-3.5 text-red-500" />
+              Menu
+            </Link>
+            <Link
+              href={`/r/${restaurant.slug}/reservation`}
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-xl text-sm font-medium text-zinc-200 bg-zinc-900/60 hover:bg-zinc-800 flex items-center gap-2"
+            >
+              <Calendar className="w-3.5 h-3.5 text-red-500" />
+              Reservations
+            </Link>
+            <Link
+              href="#story"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-xl text-sm font-medium text-zinc-200 bg-zinc-900/60 hover:bg-zinc-800 flex items-center gap-2"
+            >
+              Our Story
+            </Link>
+            <Link
+              href="#gallery"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-xl text-sm font-medium text-zinc-200 bg-zinc-900/60 hover:bg-zinc-800 flex items-center gap-2"
+            >
+              Gallery
+            </Link>
+            <Link
+              href="#contact"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3.5 py-2.5 rounded-xl text-sm font-medium text-zinc-200 bg-zinc-900/60 hover:bg-zinc-800 flex items-center gap-2"
+            >
+              <Phone className="w-3.5 h-3.5 text-red-500" />
+              Contact
+            </Link>
+          </div>
+
+          <div className="pt-2">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setIsCartOpen(true);
+              }}
+              className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-lg shadow-red-600/30 flex items-center justify-center gap-2"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>View Cart & Checkout ({totalQuantity})</span>
+            </button>
+          </div>
         </div>
       )}
     </header>

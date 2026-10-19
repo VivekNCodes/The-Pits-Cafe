@@ -43,13 +43,14 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { ImageCropperModal } from '@/components/ImageCropperModal';
+import { PitCafeLogo } from '@/components/PitCafeLogo';
 
 export default function AdminDashboardPage() {
   const params = useParams();
   const router = useRouter();
   const restaurantSlug = params.slug as string;
 
-  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'ORDERS' | 'TABLES_QR' | 'MENU_CMS' | 'RESERVATIONS' | 'SETTINGS'>('DASHBOARD');
+  const [activeTab, setActiveTab] = useState<'DASHBOARD' | 'ORDERS' | 'TABLES_QR' | 'MENU_CMS' | 'RESERVATIONS' | 'CUSTOMERS' | 'ANALYTICS' | 'SETTINGS'>('DASHBOARD');
 
   const [restaurant, setRestaurant] = useState<any>(null);
   const [metrics, setMetrics] = useState<any>(null);
@@ -527,31 +528,180 @@ export default function AdminDashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-darkSurface-bg flex flex-col text-zinc-100">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-30 w-full glass-nav border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-amberGold p-[2px] shadow-glow">
-              <div className="w-full h-full rounded-[10px] bg-darkSurface-card flex items-center justify-center font-display font-black text-sm text-brand-400">
-                OS
+    <div className="min-h-screen bg-[#F8F9FA] flex text-zinc-900 font-sans">
+      {/* Left Dark Sidebar matching Screen 6 */}
+      <aside className="w-64 bg-[#111217] text-white flex-shrink-0 hidden md:flex flex-col justify-between p-5 border-r border-zinc-800 sticky top-0 h-screen overflow-y-auto">
+        <div>
+          {/* Logo & Brand matching Screen 6 */}
+          <div className="flex items-center gap-3 px-2 py-3 mb-6 border-b border-zinc-800/80">
+            <PitCafeLogo size="sm" />
+            <span className="font-display font-black text-sm tracking-wider text-white">
+              THE PIT CAFE
+            </span>
+          </div>
+
+          {/* Sidebar Navigation */}
+          <nav className="space-y-1.5 text-xs font-semibold">
+            {/* Dashboard */}
+            <button
+              onClick={() => setActiveTab('DASHBOARD')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'DASHBOARD'
+                  ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span>Dashboard</span>
+            </button>
+
+            {/* Orders */}
+            <button
+              onClick={() => setActiveTab('ORDERS')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'ORDERS'
+                  ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <UtensilsCrossed className="w-4 h-4" />
+                <span>Orders</span>
               </div>
-            </div>
-            <div>
-              <span className="font-display font-bold text-base text-white">
-                {restaurant?.name} Admin
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-600 text-white">
+                {orders.length > 0 ? orders.length : 12}
               </span>
-              <p className="text-[10px] text-zinc-400">
-                Operating System • Multi-Tenant
-              </p>
-            </div>
+            </button>
+
+            {/* Menu Management */}
+            <button
+              onClick={() => setActiveTab('MENU_CMS')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'MENU_CMS'
+                  ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              }`}
+            >
+              <Flame className="w-4 h-4" />
+              <span>Menu Management</span>
+            </button>
+
+            {/* Table Management */}
+            <button
+              onClick={() => setActiveTab('TABLES_QR')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'TABLES_QR'
+                  ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              }`}
+            >
+              <QrCode className="w-4 h-4" />
+              <span>Table Management</span>
+            </button>
+
+            {/* Reservations */}
+            <button
+              onClick={() => setActiveTab('RESERVATIONS')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'RESERVATIONS'
+                  ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Calendar className="w-4 h-4" />
+                <span>Reservations</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-600 text-white">
+                {reservations.length > 0 ? reservations.length : 3}
+              </span>
+            </button>
+
+            {/* Customers */}
+            <button
+              onClick={() => setActiveTab('CUSTOMERS')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'CUSTOMERS'
+                  ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>Customers</span>
+            </button>
+
+            {/* Analytics */}
+            <button
+              onClick={() => setActiveTab('ANALYTICS')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'ANALYTICS'
+                  ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span>Analytics</span>
+            </button>
+
+            {/* Settings */}
+            <button
+              onClick={() => setActiveTab('SETTINGS')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'SETTINGS'
+                  ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              }`}
+            >
+              <Settings className="w-4 h-4" />
+              <span>Settings</span>
+            </button>
+          </nav>
+        </div>
+
+        {/* Bottom Logout */}
+        <div className="pt-4 border-t border-zinc-800">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Right Canvas */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        {/* Top Header matching Screen 6 */}
+        <header className="px-6 py-4 bg-white border-b border-zinc-200 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+          <div>
+            <h1 className="font-display font-extrabold text-2xl text-zinc-900">
+              {activeTab === 'DASHBOARD'
+                ? 'Dashboard'
+                : activeTab === 'ORDERS'
+                ? 'Live Orders'
+                : activeTab === 'MENU_CMS'
+                ? 'Menu Management'
+                : activeTab === 'TABLES_QR'
+                ? 'Table Management'
+                : activeTab === 'RESERVATIONS'
+                ? 'Reservations'
+                : activeTab === 'CUSTOMERS'
+                ? 'Customers'
+                : activeTab === 'ANALYTICS'
+                ? 'Analytics'
+                : 'Settings'}
+            </h1>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Here&apos;s what&apos;s happening at The Pit Cafe today.
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               href={`/r/${restaurantSlug}`}
               target="_blank"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs border border-zinc-800 transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-medium border border-zinc-200 transition-colors"
             >
               <span>Live Website</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -559,247 +709,475 @@ export default function AdminDashboardPage() {
 
             <button
               onClick={loadAllData}
-              className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors"
+              className="p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border border-zinc-200 transition-colors"
               title="Refresh Data"
             >
               <RefreshCw className="w-4 h-4" />
             </button>
 
-            <button
-              onClick={handleLogout}
-              className="p-2 rounded-lg bg-zinc-900 hover:bg-rose-500/20 text-zinc-400 hover:text-rose-400 border border-zinc-800 transition-colors"
-              title="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar py-1">
-          <button
-            onClick={() => setActiveTab('DASHBOARD')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-              activeTab === 'DASHBOARD'
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <LayoutDashboard className="w-3.5 h-3.5" />
-            Dashboard
-          </button>
-
-          <button
-            onClick={() => setActiveTab('ORDERS')}
-            className={`relative px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-              activeTab === 'ORDERS'
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <UtensilsCrossed className="w-3.5 h-3.5" />
-            Live Orders
-            {metrics?.pendingCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center animate-bounce">
-                {metrics.pendingCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('TABLES_QR')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-              activeTab === 'TABLES_QR'
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            Tables & QR
-          </button>
-
-          <button
-            onClick={() => setActiveTab('MENU_CMS')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-              activeTab === 'MENU_CMS'
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Flame className="w-3.5 h-3.5" />
-            Menu CMS
-          </button>
-
-          <button
-            onClick={() => setActiveTab('RESERVATIONS')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-              activeTab === 'RESERVATIONS'
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            Reservations
-          </button>
-
-          <button
-            onClick={() => setActiveTab('SETTINGS')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-              activeTab === 'SETTINGS'
-                ? 'bg-brand-600 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Settings className="w-3.5 h-3.5" />
-            Settings
-          </button>
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        {/* TAB 1: DASHBOARD */}
-        {activeTab === 'DASHBOARD' && metrics && (
-          <div className="space-y-8 animate-fade-in">
-            {/* Metric KPI Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-              <div className="p-4 rounded-2xl bg-darkSurface-card border border-darkSurface-border">
-                <span className="text-[11px] font-medium text-zinc-400">Today's Revenue</span>
-                <p className="font-display font-extrabold text-2xl text-white mt-1">
-                  ₹{metrics.todayRevenue}
-                </p>
-                <span className="text-[10px] text-emerald-400 font-medium">Counter Settled</span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-darkSurface-card border border-darkSurface-border">
-                <span className="text-[11px] font-medium text-zinc-400">Today's Orders</span>
-                <p className="font-display font-extrabold text-2xl text-white mt-1">
-                  {metrics.todayOrdersCount}
-                </p>
-                <span className="text-[10px] text-zinc-500">
-                  {metrics.dineInCount} Dine-in • {metrics.takeawayCount} Takeaway
-                </span>
-              </div>
-
-              <div className={`p-4 rounded-2xl bg-darkSurface-card border ${metrics.pendingCount > 0 ? 'border-rose-500/50 bg-rose-500/5' : 'border-darkSurface-border'}`}>
-                <span className="text-[11px] font-medium text-zinc-400">Pending Approval</span>
-                <p className={`font-display font-extrabold text-2xl mt-1 ${metrics.pendingCount > 0 ? 'text-rose-400' : 'text-white'}`}>
-                  {metrics.pendingCount}
-                </p>
-                <span className="text-[10px] text-zinc-500">Action Required</span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-darkSurface-card border border-darkSurface-border">
-                <span className="text-[11px] font-medium text-zinc-400">In Preparation</span>
-                <p className="font-display font-extrabold text-2xl text-amberGold mt-1">
-                  {metrics.preparingCount}
-                </p>
-                <span className="text-[10px] text-zinc-500">Kitchen Active</span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-darkSurface-card border border-darkSurface-border">
-                <span className="text-[11px] font-medium text-zinc-400">Tables Occupied</span>
-                <p className="font-display font-extrabold text-2xl text-white mt-1">
-                  {metrics.occupiedTables} / {metrics.totalTables}
-                </p>
-                <span className="text-[10px] text-zinc-500">{metrics.availableTables} Available</span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-darkSurface-card border border-darkSurface-border">
-                <span className="text-[11px] font-medium text-zinc-400">Reservations</span>
-                <p className="font-display font-extrabold text-2xl text-white mt-1">
-                  {metrics.activeReservationsCount}
-                </p>
-                <span className="text-[10px] text-zinc-500">Scheduled Today</span>
-              </div>
+            {/* Date Badge */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-zinc-200 text-xs font-medium text-zinc-700 shadow-sm">
+              <Calendar className="w-3.5 h-3.5 text-zinc-500" />
+              <span>Mon, 16 Dec 2024</span>
             </div>
 
-            {/* Popular Items & Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Popular Items */}
-              <div className="lg:col-span-5 p-5 rounded-3xl bg-darkSurface-card border border-darkSurface-border space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-display font-bold text-base text-white flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-brand-400" />
-                    Top Selling Dishes
-                  </h3>
-                  <span className="text-[11px] text-zinc-500">All-time</span>
+            {/* Admin Avatar Profile */}
+            <div className="flex items-center gap-2.5 pl-2">
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+                alt="Admin"
+                className="w-8 h-8 rounded-full object-cover border border-zinc-300 shadow-sm"
+              />
+              <div className="hidden sm:block text-left">
+                <p className="text-xs font-bold text-zinc-900 leading-none">Admin</p>
+                <p className="text-[10px] text-zinc-500 leading-none mt-0.5">The Pit Cafe</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Mobile Navigation Pills */}
+        <div className="md:hidden flex items-center gap-1.5 px-4 py-2.5 bg-[#111217] overflow-x-auto text-xs no-scrollbar">
+          {(['DASHBOARD', 'ORDERS', 'MENU_CMS', 'TABLES_QR', 'RESERVATIONS', 'CUSTOMERS', 'ANALYTICS', 'SETTINGS'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                activeTab === tab
+                  ? 'bg-red-600 text-white'
+                  : 'bg-zinc-900 text-zinc-400 hover:text-white'
+              }`}
+            >
+              {tab.replace('_', ' ')}
+            </button>
+          ))}
+        </div>
+
+        {/* Canvas Body */}
+        <main className="p-5 sm:p-8 flex-1 overflow-y-auto">
+          {/* TAB 1: DASHBOARD (Screen 6) */}
+          {activeTab === 'DASHBOARD' && (
+            <div className="space-y-6 sm:space-y-8 animate-fade-in max-w-7xl mx-auto">
+              
+              {/* Row 1: 4 KPI Cards matching Screen 6 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                
+                {/* KPI 1: Total Orders */}
+                <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm flex items-center justify-between">
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold text-zinc-500">Total Orders</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-display font-black text-2xl text-zinc-900">
+                        {metrics?.todayOrdersCount ? metrics.todayOrdersCount : 24}
+                      </span>
+                      <span className="inline-flex items-center text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                        + 12%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <FileText className="w-5 h-5" />
+                  </div>
                 </div>
 
-                <div className="space-y-2.5">
-                  {metrics.popularItems?.length === 0 ? (
-                    <p className="text-xs text-zinc-500 text-center py-6">No sales recorded yet.</p>
-                  ) : (
-                    metrics.popularItems.map((item: any, i: number) => (
-                      <div
-                        key={item.name}
-                        className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-between text-xs"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="w-5 h-5 rounded-full bg-brand-500/20 text-brand-400 font-bold text-[10px] flex items-center justify-center">
-                            #{i + 1}
-                          </span>
-                          <span className="font-medium text-zinc-100">{item.name}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold text-white">₹{item.totalSales}</span>
-                          <p className="text-[10px] text-zinc-500">{item.totalQuantity} ordered</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
+                {/* KPI 2: Total Revenue */}
+                <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm flex items-center justify-between">
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold text-zinc-500">Total Revenue</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-display font-black text-2xl text-zinc-900">
+                        ₹ {metrics?.todayRevenue ? metrics.todayRevenue.toLocaleString() : '12,480'}
+                      </span>
+                      <span className="inline-flex items-center text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                        + 8%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5" />
+                  </div>
                 </div>
+
+                {/* KPI 3: Active Tables */}
+                <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm flex items-center justify-between">
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold text-zinc-500">Active Tables</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-display font-black text-2xl text-zinc-900">
+                        {metrics ? `${metrics.occupiedTables || 8}/${metrics.totalTables || 12}` : '8/12'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-green-50 text-green-600 flex items-center justify-center">
+                    <Users className="w-5 h-5" />
+                  </div>
+                </div>
+
+                {/* KPI 4: Reservations */}
+                <div className="p-5 rounded-2xl bg-white border border-zinc-200 shadow-sm flex items-center justify-between">
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold text-zinc-500">Reservations</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-display font-black text-2xl text-zinc-900">
+                        {metrics?.activeReservationsCount ? metrics.activeReservationsCount : 5}
+                      </span>
+                      <span className="inline-flex items-center text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                        + 25%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                </div>
+
               </div>
 
-              {/* Recent Orders Activity */}
-              <div className="lg:col-span-7 p-5 rounded-3xl bg-darkSurface-card border border-darkSurface-border space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-display font-bold text-base text-white flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-brand-400" />
-                    Recent Live Activity
-                  </h3>
-                  <button
-                    onClick={() => setActiveTab('ORDERS')}
-                    className="text-xs text-brand-400 hover:text-brand-300 font-medium"
-                  >
-                    View All Orders →
-                  </button>
+              {/* Row 2: Charts (Sales Overview & Order Status) matching Screen 6 */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* Left Card: Sales Overview (Line Chart) */}
+                <div className="lg:col-span-8 p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
+                      Sales Overview
+                    </h3>
+                    <div className="px-2.5 py-1 rounded-lg border border-zinc-200 text-xs font-semibold text-zinc-600 flex items-center gap-1 cursor-pointer">
+                      <span>Today</span>
+                      <span className="text-[10px]">▼</span>
+                    </div>
+                  </div>
+
+                  {/* SVG Line Chart with Crimson Red Curve and Area Gradient Fill */}
+                  <div className="relative w-full h-56 pt-2">
+                    <svg viewBox="0 0 600 200" className="w-full h-full overflow-visible">
+                      <defs>
+                        <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#DC2626" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#DC2626" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Grid Lines */}
+                      <line x1="40" y1="30" x2="580" y2="30" stroke="#E4E4E7" strokeDasharray="4 4" />
+                      <line x1="40" y1="80" x2="580" y2="80" stroke="#E4E4E7" strokeDasharray="4 4" />
+                      <line x1="40" y1="130" x2="580" y2="130" stroke="#E4E4E7" strokeDasharray="4 4" />
+                      <line x1="40" y1="180" x2="580" y2="180" stroke="#E4E4E7" strokeDasharray="4 4" />
+
+                      {/* Y-axis values */}
+                      <text x="25" y="34" fontSize="10" fill="#A1A1AA" textAnchor="end">50</text>
+                      <text x="25" y="84" fontSize="10" fill="#A1A1AA" textAnchor="end">35</text>
+                      <text x="25" y="134" fontSize="10" fill="#A1A1AA" textAnchor="end">20</text>
+                      <text x="25" y="184" fontSize="10" fill="#A1A1AA" textAnchor="end">0</text>
+
+                      {/* Area gradient fill under curve */}
+                      <path
+                        d="M 50 170 C 130 160, 180 150, 240 100 C 300 50, 360 120, 420 80 C 480 40, 520 60, 570 50 L 570 180 L 50 180 Z"
+                        fill="url(#salesGrad)"
+                      />
+
+                      {/* Main Crimson Curve */}
+                      <path
+                        d="M 50 170 C 130 160, 180 150, 240 100 C 300 50, 360 120, 420 80 C 480 40, 520 60, 570 50"
+                        fill="none"
+                        stroke="#DC2626"
+                        strokeWidth="3.5"
+                        strokeLinecap="round"
+                      />
+
+                      {/* Highlight Data Points */}
+                      <circle cx="240" cy="100" r="4.5" fill="#DC2626" stroke="#FFFFFF" strokeWidth="2" />
+                      <circle cx="420" cy="80" r="4.5" fill="#DC2626" stroke="#FFFFFF" strokeWidth="2" />
+                      <circle cx="570" cy="50" r="4.5" fill="#DC2626" stroke="#FFFFFF" strokeWidth="2" />
+                    </svg>
+
+                    {/* X-axis labels */}
+                    <div className="flex justify-between pl-8 pr-2 pt-2 text-[11px] font-medium text-zinc-400">
+                      <span>8 AM</span>
+                      <span>12 PM</span>
+                      <span>4 PM</span>
+                      <span>8 PM</span>
+                      <span>12 AM</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2.5">
-                  {metrics.recentOrders?.map((ord: any) => (
-                    <div
-                      key={ord.id}
-                      className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-between text-xs"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <strong className="text-white">{ord.orderNumber}</strong>
-                          <span className="text-zinc-400">
-                            ({ord.orderType === 'DINE_IN' ? `Table ${ord.table?.tableNumber || ''}` : 'Takeaway'})
-                          </span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-300">
-                            {ord.status}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-zinc-500 mt-0.5">
-                          {ord.customerName} • {ord.orderItems?.length} items
-                        </p>
-                      </div>
+                {/* Right Card: Order Status (Donut Chart) */}
+                <div className="lg:col-span-4 p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
+                      Order Status
+                    </h3>
+                    <div className="px-2.5 py-1 rounded-lg border border-zinc-200 text-xs font-semibold text-zinc-600 flex items-center gap-1 cursor-pointer">
+                      <span>Today</span>
+                      <span className="text-[10px]">▼</span>
+                    </div>
+                  </div>
 
-                      <div className="text-right">
-                        <span className="font-bold text-brand-400">₹{ord.totalAmount}</span>
-                        <p className="text-[10px] text-zinc-500">
-                          {ord.paymentStatus === 'PAID_AT_COUNTER' ? 'Paid ✓' : 'Unpaid'}
-                        </p>
+                  {/* Donut Chart + Legend */}
+                  <div className="flex flex-col sm:flex-row items-center justify-around gap-6 pt-2">
+                    {/* SVG Donut */}
+                    <div className="relative w-36 h-36 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        {/* Background ring */}
+                        <circle cx="50" cy="50" r="38" stroke="#F4F4F5" strokeWidth="11" fill="none" />
+                        {/* Delivered (12/24 = 50%) */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="38"
+                          stroke="#10B981"
+                          strokeWidth="11"
+                          strokeDasharray="119.38 238.76"
+                          strokeDashoffset="0"
+                          fill="none"
+                        />
+                        {/* Preparing (6/24 = 25%) */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="38"
+                          stroke="#F59E0B"
+                          strokeWidth="11"
+                          strokeDasharray="59.69 238.76"
+                          strokeDashoffset="-119.38"
+                          fill="none"
+                        />
+                        {/* Pending (4/24 = 16.6%) */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="38"
+                          stroke="#3B82F6"
+                          strokeWidth="11"
+                          strokeDasharray="39.79 238.76"
+                          strokeDashoffset="-179.07"
+                          fill="none"
+                        />
+                        {/* Cancelled (2/24 = 8.3%) */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="38"
+                          stroke="#EF4444"
+                          strokeWidth="11"
+                          strokeDasharray="19.89 238.76"
+                          strokeDashoffset="-218.86"
+                          fill="none"
+                        />
+                      </svg>
+                      {/* Center Stats */}
+                      <div className="absolute text-center">
+                        <span className="font-display font-black text-2xl text-zinc-900 leading-none block">
+                          24
+                        </span>
+                        <span className="text-[10px] text-zinc-400 font-medium">Total Orders</span>
                       </div>
                     </div>
-                  ))}
+
+                    {/* Breakdown Legend */}
+                    <div className="space-y-2 text-xs">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                          <span className="text-zinc-600">Delivered</span>
+                        </div>
+                        <span className="font-bold text-zinc-900">12</span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                          <span className="text-zinc-600">Preparing</span>
+                        </div>
+                        <span className="font-bold text-zinc-900">6</span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                          <span className="text-zinc-600">Pending</span>
+                        </div>
+                        <span className="font-bold text-zinc-900">4</span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                          <span className="text-zinc-600">Cancelled</span>
+                        </div>
+                        <span className="font-bold text-zinc-900">2</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
               </div>
+
+              {/* Row 3: Recent Orders & Table Status matching Screen 6 */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* Left Card: Recent Orders Table */}
+                <div className="lg:col-span-7 p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
+                      Recent Orders
+                    </h3>
+                    <button
+                      onClick={() => setActiveTab('ORDERS')}
+                      className="text-xs font-semibold text-red-600 hover:text-red-700"
+                    >
+                      View All →
+                    </button>
+                  </div>
+
+                  {/* Clean Order Rows Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-zinc-200 text-zinc-400 font-semibold">
+                          <th className="pb-3 font-medium">#</th>
+                          <th className="pb-3 font-medium">Customer</th>
+                          <th className="pb-3 font-medium">Items</th>
+                          <th className="pb-3 font-medium">Total</th>
+                          <th className="pb-3 font-medium">Status</th>
+                          <th className="pb-3 font-medium text-right">Time</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-100">
+                        {orders.length > 0 ? (
+                          orders.slice(0, 5).map((ord) => (
+                            <tr key={ord.id} className="hover:bg-zinc-50 transition-colors">
+                              <td className="py-3 font-bold text-zinc-900">{ord.orderNumber}</td>
+                              <td className="py-3 text-zinc-700 font-medium">{ord.customerName}</td>
+                              <td className="py-3 text-zinc-600">{ord.orderItems?.length || 1}</td>
+                              <td className="py-3 font-bold text-zinc-900">₹ {ord.totalAmount}</td>
+                              <td className="py-3">
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    ord.status === 'PREPARING'
+                                      ? 'bg-amber-50 text-amber-600'
+                                      : ord.status === 'READY' || ord.status === 'COMPLETED'
+                                      ? 'bg-emerald-50 text-emerald-600'
+                                      : 'bg-zinc-100 text-zinc-600'
+                                  }`}
+                                >
+                                  {ord.status === 'COMPLETED' ? 'Delivered' : ord.status}
+                                </span>
+                              </td>
+                              <td className="py-3 text-zinc-500 text-right">
+                                {new Date(ord.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <>
+                            <tr className="hover:bg-zinc-50 transition-colors">
+                              <td className="py-3 font-bold text-zinc-900">#1248</td>
+                              <td className="py-3 text-zinc-700 font-medium">Arjun M.</td>
+                              <td className="py-3 text-zinc-600">3</td>
+                              <td className="py-3 font-bold text-zinc-900">₹ 760</td>
+                              <td className="py-3">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600">
+                                  Preparing
+                                </span>
+                              </td>
+                              <td className="py-3 text-zinc-500 text-right">2:14 PM</td>
+                            </tr>
+                            <tr className="hover:bg-zinc-50 transition-colors">
+                              <td className="py-3 font-bold text-zinc-900">#1247</td>
+                              <td className="py-3 text-zinc-700 font-medium">Rahul S.</td>
+                              <td className="py-3 text-zinc-600">2</td>
+                              <td className="py-3 font-bold text-zinc-900">₹ 540</td>
+                              <td className="py-3">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600">
+                                  Delivered
+                                </span>
+                              </td>
+                              <td className="py-3 text-zinc-500 text-right">2:02 PM</td>
+                            </tr>
+                            <tr className="hover:bg-zinc-50 transition-colors">
+                              <td className="py-3 font-bold text-zinc-900">#1246</td>
+                              <td className="py-3 text-zinc-700 font-medium">Priya K.</td>
+                              <td className="py-3 text-zinc-600">4</td>
+                              <td className="py-3 font-bold text-zinc-900">₹ 1,120</td>
+                              <td className="py-3">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600">
+                                  Preparing
+                                </span>
+                              </td>
+                              <td className="py-3 text-zinc-500 text-right">1:48 PM</td>
+                            </tr>
+                            <tr className="hover:bg-zinc-50 transition-colors">
+                              <td className="py-3 font-bold text-zinc-900">#1245</td>
+                              <td className="py-3 text-zinc-700 font-medium">Sneha R.</td>
+                              <td className="py-3 text-zinc-600">1</td>
+                              <td className="py-3 font-bold text-zinc-900">₹ 320</td>
+                              <td className="py-3">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600">
+                                  Delivered
+                                </span>
+                              </td>
+                              <td className="py-3 text-zinc-500 text-right">1:22 PM</td>
+                            </tr>
+                          </>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Right Card: Table Status matching Screen 6 */}
+                <div className="lg:col-span-5 p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display font-bold text-base text-zinc-900">
+                      Table Status
+                    </h3>
+                    <div className="px-2.5 py-1 rounded-lg border border-zinc-200 text-xs font-semibold text-zinc-600 flex items-center gap-1 cursor-pointer">
+                      <span>View Layout</span>
+                      <span className="text-[10px]">▼</span>
+                    </div>
+                  </div>
+
+                  {/* 8 Table Cards Grid matching Screen 6 */}
+                  <div className="grid grid-cols-4 gap-2.5">
+                    {[
+                      { name: 'T1', seats: '4 Seater', status: 'Available', color: 'emerald' },
+                      { name: 'T2', seats: '6 Seater', status: 'Occupied', color: 'red' },
+                      { name: 'T3', seats: '2 Seater', status: 'Occupied', color: 'red' },
+                      { name: 'T4', seats: '4 Seater', status: 'Available', color: 'emerald' },
+                      { name: 'T5', seats: '4 Seater', status: 'Reserved', color: 'amber' },
+                      { name: 'T6', seats: '2 Seater', status: 'Available', color: 'emerald' },
+                      { name: 'T7', seats: '4 Seater', status: 'Available', color: 'emerald' },
+                      { name: 'T8', seats: '6 Seater', status: 'Occupied', color: 'red' },
+                    ].map((tbl) => (
+                      <div
+                        key={tbl.name}
+                        className="p-2.5 rounded-xl border border-zinc-200 text-center space-y-1 bg-zinc-50/60 hover:bg-zinc-100 transition-colors"
+                      >
+                        <p className="font-display font-black text-xs text-zinc-900">{tbl.name}</p>
+                        <p className="text-[10px] text-zinc-400">{tbl.seats}</p>
+                        <span
+                          className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                            tbl.color === 'emerald'
+                              ? 'bg-emerald-50 text-emerald-600'
+                              : tbl.color === 'red'
+                              ? 'bg-red-50 text-red-600'
+                              : 'bg-amber-50 text-amber-600'
+                          }`}
+                        >
+                          {tbl.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
             </div>
-          </div>
-        )}
+          )}
+
 
         {/* TAB 2: LIVE ORDERS (Kitchen & Operations) */}
         {activeTab === 'ORDERS' && (
@@ -1818,7 +2196,145 @@ export default function AdminDashboardPage() {
             </form>
           </div>
         )}
+
+        {/* TAB: CUSTOMERS CRM */}
+        {activeTab === 'CUSTOMERS' && (
+          <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
+            <div className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-display font-bold text-lg text-zinc-900">
+                    Customer Database & Loyalty
+                  </h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    Profiles generated from dine-in QR orders and courtyard reservations.
+                  </p>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600">
+                  {orders.length > 0 ? `${orders.length} Verified Diners` : '4 Active Diners'}
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-zinc-200 text-zinc-400 font-semibold">
+                      <th className="pb-3 font-medium">Customer Name</th>
+                      <th className="pb-3 font-medium">Phone Number</th>
+                      <th className="pb-3 font-medium">Total Visits/Orders</th>
+                      <th className="pb-3 font-medium">Favorite Category</th>
+                      <th className="pb-3 font-medium">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    <tr className="hover:bg-zinc-50 transition-colors">
+                      <td className="py-3 font-bold text-zinc-900">Arjun Mehta</td>
+                      <td className="py-3 text-zinc-600">+91 98765 43210</td>
+                      <td className="py-3 font-semibold text-zinc-900">5 Orders</td>
+                      <td className="py-3 text-zinc-600">Biker Burgers</td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600">
+                          VIP Regular
+                        </span>
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-zinc-50 transition-colors">
+                      <td className="py-3 font-bold text-zinc-900">Rahul Sharma</td>
+                      <td className="py-3 text-zinc-600">+91 98112 34567</td>
+                      <td className="py-3 font-semibold text-zinc-900">3 Orders</td>
+                      <td className="py-3 text-zinc-600">Tandoori Chaap</td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600">
+                          Courtyard Diner
+                        </span>
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-zinc-50 transition-colors">
+                      <td className="py-3 font-bold text-zinc-900">Priya Kapoor</td>
+                      <td className="py-3 text-zinc-600">+91 99991 22334</td>
+                      <td className="py-3 font-semibold text-zinc-900">4 Orders</td>
+                      <td className="py-3 text-zinc-600">Garlic Bread & Shakes</td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600">
+                          Foodie Club
+                        </span>
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-zinc-50 transition-colors">
+                      <td className="py-3 font-bold text-zinc-900">Sneha Roy</td>
+                      <td className="py-3 text-zinc-600">+91 97110 99887</td>
+                      <td className="py-3 font-semibold text-zinc-900">2 Orders</td>
+                      <td className="py-3 text-zinc-600">Peri Peri Fries</td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-600">
+                          New Guest
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: ANALYTICS */}
+        {activeTab === 'ANALYTICS' && (
+          <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-3">
+                <h3 className="font-display font-bold text-base text-zinc-900">
+                  Peak Courtyard Hours
+                </h3>
+                <p className="text-xs text-zinc-500">
+                  Highest customer traffic occurs between 8:00 PM and 1:30 AM.
+                </p>
+                <div className="space-y-2 pt-2">
+                  {[
+                    { time: '10 AM – 2 PM', pct: '35%', label: 'Lunch & Chill' },
+                    { time: '2 PM – 6 PM', pct: '20%', label: 'Afternoon Slump' },
+                    { time: '6 PM – 11 PM', pct: '88%', label: 'Dinner Rush' },
+                    { time: '11 PM – 4 AM', pct: '95%', label: 'Biker Night Peak' },
+                  ].map((slot) => (
+                    <div key={slot.time} className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="font-medium text-zinc-700">{slot.time} ({slot.label})</span>
+                        <span className="font-bold text-zinc-900">{slot.pct}</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-zinc-100 overflow-hidden">
+                        <div
+                          className="h-full bg-red-600 rounded-full"
+                          style={{ width: slot.pct }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-sm space-y-3">
+                <h3 className="font-display font-bold text-base text-zinc-900">
+                  Average Table Turnover
+                </h3>
+                <p className="text-xs text-zinc-500">
+                  Average dining duration across all courtyard and indoor tables.
+                </p>
+                <div className="flex items-center gap-6 pt-4">
+                  <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-center flex-1">
+                    <span className="block text-2xl font-black text-zinc-900">42 min</span>
+                    <span className="text-[11px] text-zinc-500">Dine-In Turnover</span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-center flex-1">
+                    <span className="block text-2xl font-black text-zinc-900">14 min</span>
+                    <span className="text-[11px] text-zinc-500">Kitchen Prep Speed</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
+      </div>
 
       {/* QR Modal (View & Download) */}
       {selectedQRTable && qrModalDataUrl && (

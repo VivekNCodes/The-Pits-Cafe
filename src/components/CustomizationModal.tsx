@@ -17,6 +17,8 @@ export function CustomizationModal({ item, isOpen, onClose }: CustomizationModal
   const [selectedAddons, setSelectedAddons] = useState<Array<{ id: string; name: string; price: number }>>([]);
   const [specialInstructions, setSpecialInstructions] = useState('');
 
+  const [imgError, setImgError] = useState(false);
+
   if (!isOpen) return null;
 
   const toggleAddon = (addon: { id: string; name: string; price: number }) => {
@@ -50,12 +52,13 @@ export function CustomizationModal({ item, isOpen, onClose }: CustomizationModal
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full max-w-lg rounded-2xl bg-darkSurface-card border border-darkSurface-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="relative aspect-[16/8] w-full bg-zinc-900 overflow-hidden flex-shrink-0">
-          {item.imageUrl && (
+        <div className="relative aspect-[16/9] w-full bg-zinc-900 overflow-hidden flex-shrink-0">
+          {item.imageUrl && !imgError && (
             <img
               src={item.imageUrl}
-              alt={item.name}
-              className="w-full h-full object-cover"
+              alt=""
+              onError={() => setImgError(true)}
+              className="w-full h-full object-cover object-center"
             />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-darkSurface-card via-darkSurface-card/40 to-transparent" />
